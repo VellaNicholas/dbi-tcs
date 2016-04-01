@@ -5,7 +5,7 @@
  	<body>
 		<?php
 			//establishes connection to the database, and outputs either 'Connected' or an Oracle exception
-			$conn = oci_connect('s100608129', 'jxAsPZN2', 'db.nicholaslvella.com/DBITCS');
+			$conn = oci_connect('s100608129', 'password', 'db.nicholaslvella.com/DBITCS');
 			if (!$conn) {
 			    $e = oci_error();
 			    trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
