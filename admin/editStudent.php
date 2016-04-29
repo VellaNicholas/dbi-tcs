@@ -47,14 +47,12 @@
                 //} 
                 oci_commit($conn);
 
-                debug_to_console( "Got Details" );
             }
         }
 
         //Check if submit button is pressed
         if (isset($_POST["submit"])) {
 
-            debug_to_console( "Submit Pressed" );
 
             if (empty($_POST['stu_ID'])){
                 $errID = 'Please enter an student ID';
@@ -108,10 +106,8 @@
 
                 $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Student successfully registered!</div>';
 
-                        //REMEMBER TO REMOVE CONNECTION LOGIC LATER. KEEP IT IN LOGIN
                 $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
 
-                debug_to_console( "Running SQL" );
 
                 $sql = 'BEGIN UPDATE_STUDENT(:stuid, :firstname, :lastname, :email, :contactno); END;';
 
@@ -135,12 +131,10 @@
 
                 $id = $firstName = $lastName = $email = $contact = $e = "";
 
-                debug_to_console( "SQL Committed" );
 
             } else {
                 $result='<div class="span alert alert-danger fade in"><strong>Oops! </strong>something unexpected happened! Please try registering this student later.</div>';
 
-                debug_to_console( "Failed Validation" );
             }
         }           
 

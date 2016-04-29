@@ -53,10 +53,10 @@
                 $email = "";
             }
 
-            if (!empty($_POST['emp_Contact'] && !is_numeric($contact))) {
-                $errContact = 'Invalid Contact Number';
-            } else {
+            if (is_numeric($_POST['emp_Contact']) || empty($_POST['emp_Contact'])) {
                 $contact = test_input($_POST["emp_Contact"]);
+            } else {
+                $errContact = 'Please enter a valid contact number';
             }
 
             if (!$errID && !$errFName && !$errLName && !$errEmail && !$errContact){
