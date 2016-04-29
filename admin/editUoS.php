@@ -18,17 +18,6 @@
         //ini_set('display_errors', 'On');
         $id = $unitName = $unitDescription = $e = "";
 
-        function debug_to_console( $data ) {
-
-        if ( is_array( $data ) )
-            $output = "<script>console.log( 'Debug Objects: " . implode( ',', $data) . "' );</script>";
-        else
-            $output = "<script>console.log( 'Debug Objects: " . $data . "' );</script>";
-    
-        echo $output;
-        }
-
-
         //Check if Find button is pressed
         if (isset($_POST["find"])) {
             if (empty($_POST['unit_ID'])){ 
@@ -49,21 +38,17 @@
                 oci_execute($stmt);
 
                 $e = oci_error($stmt);
-                echo htmlentities($e['message']);
                 //If oracle codes
                 //if ($e != ""){
                     //echo
                 //} 
                 oci_commit($conn);
 
-                debug_to_console( "Got Details" );
             }
         }
 
         //Check if submit button is pressed
         if (isset($_POST["submit"])) {
-
-            debug_to_console( "Submit Pressed" );
 
             if (empty($_POST['unit_ID'])){       
                 $errUnitID = 'Please enter a Unit ID';
@@ -92,7 +77,7 @@
                         //REMEMBER TO REMOVE CONNECTION LOGIC LATER. KEEP IT IN LOGIN
                 $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
 
-                debug_to_console( "Running SQL" );
+
 
                 $sql = 'BEGIN UPDATE_UNIT(:unitid, :unitname, :unitdescription); END;';
 
@@ -102,7 +87,6 @@
                 oci_bind_by_name($stmt, ':unitid',$id, 32);     
                 oci_bind_by_name($stmt, ':unitname',$unitName, 32);
                 oci_bind_by_name($stmt, ':unitdescription',$unitDescription, 32);
-                
 
                 oci_execute($stmt);
 
@@ -115,12 +99,10 @@
 
                 $id = $unitName = $unitDescription = $e = ""; 
 
-                debug_to_console( "SQL Committed" );
 
             } else {
                 $result='<div class="span alert alert-danger fade in"><strong>Oops! </strong>something unexpected happened! Please try registering this Unit of Study later.</div>';
 
-                debug_to_console( "Failed Validation" );
             }
         }           
 
