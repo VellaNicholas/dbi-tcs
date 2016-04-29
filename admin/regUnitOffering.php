@@ -149,7 +149,7 @@
                                 </div>
                                 
                                 <div class="form-group">
-                                  <label for="unit_Semester">Select Year:</label>
+                                  <label for="unit_Year">Select Year:</label>
                                   <select class="form-control" id="unit_Year
                                   " name="unit_Year">
                                     <option>2017</option>
