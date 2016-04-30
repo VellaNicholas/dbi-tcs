@@ -3,6 +3,7 @@
     include '../global/ini.php'; 
     include '../global/navigation.php';
     include 'dataAccess.php';
+    include './controller/contRegStudent.php';
 ?>
 
 <!DOCTYPE html>
@@ -14,98 +15,13 @@
 
 <body>
     <?php
-
         //Initalise variable to null
         $id = $firstName = $lastName = $email = $contact = $e = "";
 
         //This block connects to the database and inputs the student details to the database
         if (isset($_POST["submit"])) {
-            if (empty($_POST['stu_ID'])){
-                $errID = 'Invalid student ID';
-            } else {
-                $id = test_input($_POST["stu_ID"]);
-            }
-            //VALIDATION
-            if (!is_numeric($id)){
-                $x = 'x';
-                $xPos = strpos($id, $x);
-                if ($xPos != 7){
-                    $errID = 'Invalid student ID';
-                }
-            }
-            //Check first name
-            if (empty($_POST['stu_FName'])) {
-               $errFName = 'First name required';
-            } else {
-                $firstName = test_input($_POST["stu_FName"]);                
-            }
-            //Check last name
-            if (empty($_POST['stu_LName'])) {
-                $errLName = 'Surname required';
-            } else {
-                $lastName = test_input($_POST["stu_LName"]);
-            }
-            //Check email.
-            if (empty($_POST['stu_Email'])) {
-                $errEmail = 'Email address required';
-            } else {
-                $email = test_input($_POST["stu_Email"]);
-            }
-            //Validate email format
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $errEmail = "Invalid email address";
-                $email = "";
-            }
-            //Check contact number
-            if (empty($_POST['stu_Contact'])) {
-                $errContact = 'Contact number required';
-            } else {
-                $contact = test_input($_POST["stu_Contact"]);
-            }
-            //Contact no. String must contain numbers
-            if (!is_numeric($contact)) {
-                $errContact = "Invalid contact number";
-                $contact = "";
-            }
-
-            //If there are no errors, submit to the database, otherwise an exception is displayed to the user
-            if (!$errID && !$errFName && !$errLName && !$errEmail && !$errContact){
-
- /*               $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
-
-                $sql = 'BEGIN INSERT_STUDENT(:stuid, :firstname, :lastname, :email, :contactno); END;';
-
-                $stmt = oci_parse($conn,$sql);
-
-                //Bind the inputs
-                oci_bind_by_name($stmt, ':stuid',$id,32);               //input
-                oci_bind_by_name($stmt, ':firstname',$firstName,32);    //input
-                oci_bind_by_name($stmt, ':lastname',$lastName,32);      //input
-                oci_bind_by_name($stmt, ':email',$email,32);            //input
-                oci_bind_by_name($stmt, ':contactno',$contact,32);      //input
-
-                oci_execute($stmt);
-
-                $e = oci_error($stmt);
-
-                if ($e != "") {
-                    $result = parse_exception($e);
-                }
-                
-                oci_commit($conn); */
-
-                $result = insert_student($id, $firstName, $lastName, $email, $contact);
-
-            }
+            $result = insert_to_database($id, $firstName, $lastName, $email, $contact);            
         }           
-
-        //Prevents scripting and SQL injection
-        function test_input($data) {
-            $data = trim($data);
-            $data = stripslashes($data);
-            $data = htmlspecialchars($data);
-            return $data;
-        }
     ?>
     <?php
     
