@@ -144,6 +144,41 @@
 
     }
 
+    function insert_unit(&$unitID, &$unitName, &$unitDescription) {
+        $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
+
+        $sql = 'BEGIN INSERT_UNIT(:unitid, :name, :description); END;';
+
+        $stmt = oci_parse($conn,$sql);
+
+        //Bind the inputs
+        oci_bind_by_name($stmt, ':unitid', $unitID);
+        oci_bind_by_name($stmt, ':name', $unitName);
+        oci_bind_by_name($stmt, ':description', $unitDescription);
+
+        oci_execute($stmt);
+        oci_commit($conn);
+
+        $e = oci_error($stmt);
+
+        //TODO: Exceptions
+        switch ($e['code']) {
+            case "":
+                $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Unit successfully registered!</div>';
+                break;
+            case 1:
+                $result = '<div class="span alert alert-danger fade in">Unit with this ID already exists</div>';
+                break;
+            case 12899:
+                $result = '<div class="span alert alert-danger fade in">Too many characters in field</div>';
+                break;
+            default:
+                $result = '<div class="span alert alert-danger fade in">Unknown Error Occurred</div>';
+                debug_to_console( $e[message] );
+                break;
+        }
+    }
+
     function debug_to_console( $data ) {
 
         if ( is_array( $data ) )
