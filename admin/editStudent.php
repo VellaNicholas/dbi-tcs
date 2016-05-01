@@ -2,6 +2,8 @@
     session_start();
     include '../global/ini.php';
     include '../global/navigation.php';
+    include 'dataAccess.php';
+    include './controller/contEditStudent.php';
 ?>
 
 <!DOCTYPE html>
@@ -13,137 +15,16 @@
 
 <body>
     <?php
-        //error_reporting(E_ALL);
-        //ini_set('display_errors', 'On');
         $id = $firstName = $lastName = $email = $contact = $e = "";
-
 
         //Check if Find button is pressed
         if (isset($_POST["find"])) {
-            if (empty($_POST['stu_ID'])){ 
-                $errID = 'Please enter an student ID';
-            } else {
-                $id = test_input($_POST["stu_ID"]);
-
-                $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
-
-                $sql = 'BEGIN GET_STUDENT_DETAILS(:stuid, :firstname, :lastname, :email, :contactno); END;';
-
-                $stmt = oci_parse($conn,$sql);
-
-                oci_bind_by_name($stmt, ':stuid',$id, 32);               //input
-                oci_bind_by_name($stmt, ':firstname',$firstName, 32);    //output
-                oci_bind_by_name($stmt, ':lastname',$lastName, 32);      //output
-                oci_bind_by_name($stmt, ':email',$email, 32);            //output
-                oci_bind_by_name($stmt, ':contactno',$contact, 32);      //output
-
-                oci_execute($stmt);
-
-                $e = oci_error($stmt);
-                echo htmlentities($e['message']);
-                //If oracle codes
-                //if ($e != ""){
-                    //echo
-                //} 
-                oci_commit($conn);
-
-            }
+             get_details_from_database($id, $firstName, $lastName, $email, $contact);
         }
 
-        //Check if submit button is pressed
         if (isset($_POST["submit"])) {
-
-
-            if (empty($_POST['stu_ID'])){
-                $errID = 'Please enter an student ID';
-            } else {
-                $id = test_input($_POST["stu_ID"]);
-            }
-            //VALIDATION
-            if (!is_numeric($id)){
-                $x = 'x';
-                $xPos = strpos($id, $x);
-                if ($xPos != 7){
-                    $errID = 'Invalid student ID! Please try again.';
-                }
-            }
-            //Check first name
-            if (empty($_POST['stu_FName'])) {
-               $errFName = 'Please enter a first name';
-            } else {
-                $firstName = test_input($_POST["stu_FName"]);                
-            }
-            //Check last name
-            if (empty($_POST['stu_LName'])) {
-                $errLName = 'Place enter a last name';
-            } else {
-                $lastName = test_input($_POST["stu_LName"]);
-            }
-            //Check email.
-            if (empty($_POST['stu_Email'])) {
-                $errEmail = 'Please enter an email address';
-            } else {
-                $email = test_input($_POST["stu_Email"]);
-            }
-            //Validate email format
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $errEmail = "Invalid email format. Please try again";
-                $email = "";
-            }
-            //Check contact number
-            if (empty($_POST['stu_Contact'])) {
-                $errContact = 'Please enter a contact number';
-            } else {
-                $contact = test_input($_POST["stu_Contact"]);
-            }
-            //Contact no. String must contain numbers
-            if (!is_numeric($contact)) {
-                $errContact = "Only numeric values can be entered in this field";
-                $contact = "";
-            }
-
-            if (!$errFName && !$errLName && !$errEmail && !$errContact){
-
-                $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Student successfully registered!</div>';
-
-                $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
-
-
-                $sql = 'BEGIN UPDATE_STUDENT(:stuid, :firstname, :lastname, :email, :contactno); END;';
-
-                $stmt = oci_parse($conn,$sql);
-
-                //Bind the inputs
-                oci_bind_by_name($stmt, ':stuid',$id, 32);
-                oci_bind_by_name($stmt, ':firstname',$firstName, 32);
-                oci_bind_by_name($stmt, ':lastname',$lastName, 32);
-                oci_bind_by_name($stmt, ':email',$email, 32);
-                oci_bind_by_name($stmt, ':contactno',$contact, 32);
-
-                oci_execute($stmt);
-
-                $e = oci_error($stmt);
-                //If oracle codes
-                //if ($e != ""){
-                    //echo
-                //} 
-                oci_commit($conn);
-
-                $id = $firstName = $lastName = $email = $contact = $e = "";
-
-
-            } else {
-                $result='<div class="span alert alert-danger fade in"><strong>Oops! </strong>something unexpected happened! Please try registering this student later.</div>';
-
-            }
+            $result = update_database($id, $firstName, $lastName, $email, $contact);            
         }           
-
-        function test_input($data) {
-            $data = trim($data);
-            $data = stripslashes($data);
-            $data = htmlspecialchars($data);
-            return $data;
-        }
     ?>
 
     <?php

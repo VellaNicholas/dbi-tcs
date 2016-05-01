@@ -2,8 +2,9 @@
     session_start();
     include '../global/ini.php';
     include '../global/navigation.php';
+    include 'dataAccess.php';
+    include './controller/contEditUoS.php';
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -14,104 +15,17 @@
 
 <body>
     <?php
-        //error_reporting(E_ALL);
-        //ini_set('display_errors', 'On');
         $id = $unitName = $unitDescription = $e = "";
 
         //Check if Find button is pressed
         if (isset($_POST["find"])) {
-            if (empty($_POST['unit_ID'])){ 
-                $errID = 'Please enter a Unit ID';
-            } else {
-                $id = test_input($_POST["unit_ID"]); 
-
-                $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
-
-                $sql = 'BEGIN GET_UNIT_OF_sTUDY_DETAILS(:unitid, :unitname, :unitdescription); END;';
-
-                $stmt = oci_parse($conn,$sql);
-
-                oci_bind_by_name($stmt, ':unitid',$id, 32);            //input
-                oci_bind_by_name($stmt, ':unitname',$unitName, 32);    //output
-                oci_bind_by_name($stmt, ':unitdescription',$unitDescription, 32);      //output
-
-                oci_execute($stmt);
-
-                $e = oci_error($stmt);
-                //If oracle codes
-                //if ($e != ""){
-                    //echo
-                //} 
-                oci_commit($conn);
-
-            }
+             get_details_from_database($id, $unitName, $unitDescription);
         }
 
         //Check if submit button is pressed
         if (isset($_POST["submit"])) {
-
-            if (empty($_POST['unit_ID'])){       
-                $errUnitID = 'Please enter a Unit ID';
-            } else {
-                $id = test_input($_POST["unit_ID"]);  
-            }
-            //VALIDATION
-            //Check first name
-            if (empty($_POST['unit_Name'])) {        
-               $errUnitName = 'Please enter a Unit Name';
-            } else {
-                $unitName = test_input($_POST["unit_Name"]);               
-            }
-            //Check last name 
-            if (empty($_POST['unit_Description'])) {   
-                $errUnitDescription = 'Place enter a Unit Description';
-            } else {
-                $unitDescription = test_input($_POST["unit_Description"]); 
-            }
-           
-            
-            if (!$errUnitName && !$errUnitDescription){
-
-                $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Unit of Study successfully registered!</div>';
-
-                        //REMEMBER TO REMOVE CONNECTION LOGIC LATER. KEEP IT IN LOGIN
-                $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
-
-
-
-                $sql = 'BEGIN UPDATE_UNIT(:unitid, :unitname, :unitdescription); END;';
-
-                $stmt = oci_parse($conn,$sql);
-
-                //Bind the inputs 
-                oci_bind_by_name($stmt, ':unitid',$id, 32);     
-                oci_bind_by_name($stmt, ':unitname',$unitName, 32);
-                oci_bind_by_name($stmt, ':unitdescription',$unitDescription, 32);
-
-                oci_execute($stmt);
-
-                $e = oci_error($stmt);
-                //If oracle codes
-                //if ($e != ""){
-                    //echo
-                //} 
-                oci_commit($conn);
-
-                $id = $unitName = $unitDescription = $e = ""; 
-
-
-            } else {
-                $result='<div class="span alert alert-danger fade in"><strong>Oops! </strong>something unexpected happened! Please try registering this Unit of Study later.</div>';
-
-            }
-        }           
-
-        function test_input($data) {
-            $data = trim($data);
-            $data = stripslashes($data);
-            $data = htmlspecialchars($data);
-            return $data;
-        }
+            $result = update_database($id, $unitName, $unitDescription);            
+        }     
     ?>
 
     <?php
