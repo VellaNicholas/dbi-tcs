@@ -11,6 +11,7 @@
         oci_bind_by_name($stmt, ':lastname',$lastName,32);      //input
         oci_bind_by_name($stmt, ':email',$email,32);            //input
         oci_bind_by_name($stmt, ':contactno',$contact,32);      //input
+
         oci_execute($stmt);
         oci_commit($conn);
 
@@ -33,6 +34,75 @@
         }
 
         return $result;
+    }
+
+    function edit_student(&$id, &$firstName, &$lastName, &$email, &$contact) {
+        $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
+
+        $sql = 'BEGIN UPDATE_STUDENT(:stuid, :firstname, :lastname, :email, :contactno); END;';
+        $stmt = oci_parse($conn,$sql);
+
+        oci_bind_by_name($stmt, ':stuid',$id, 32);
+        oci_bind_by_name($stmt, ':firstname',$firstName, 32);
+        oci_bind_by_name($stmt, ':lastname',$lastName, 32);
+        oci_bind_by_name($stmt, ':email',$email, 32);
+        oci_bind_by_name($stmt, ':contactno',$contact, 32);
+
+        oci_execute($stmt);
+        oci_commit($conn);
+
+        switch ($e['code']) {
+            case "":
+                $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Student successfully updated!</div>';
+                break;
+            case 1:
+                $result = '<div class="span alert alert-danger fade in">Student with this ID already exists</div>';
+                break;
+            case 12899:
+                $result = '<div class="span alert alert-danger fade in">Too many characters in field</div>';
+                break;
+            default:
+                $result = '<div class="span alert alert-danger fade in">Unknown Error Occurred</div>';
+                debug_to_console( $e[message] );
+                break;
+        }
+
+        return $result;
+    }
+
+    function get_student_details(&$id, &$firstName, &$lastName, &$email, &$contact) {
+        $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
+
+        $sql = 'BEGIN GET_STUDENT_DETAILS(:stuid, :firstname, :lastname, :email, :contactno); END;';
+        $stmt = oci_parse($conn,$sql);
+
+        oci_bind_by_name($stmt, ':stuid',$id, 32);               //input
+        oci_bind_by_name($stmt, ':firstname',$firstName, 32);    //output
+        oci_bind_by_name($stmt, ':lastname',$lastName, 32);      //output
+        oci_bind_by_name($stmt, ':email',$email, 32);            //output
+        oci_bind_by_name($stmt, ':contactno',$contact, 32);      //output
+
+        oci_execute($stmt);
+        oci_commit($conn);
+
+        $e = oci_error($stmt);
+
+        //TODO: Actual codes
+        switch ($e['code']) {
+            case "":
+                $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Student successfully updated!</div>';
+                break;
+            case 1:
+                $result = '<div class="span alert alert-danger fade in">Student with this ID already exists</div>';
+                break;
+            case 12899:
+                $result = '<div class="span alert alert-danger fade in">Too many characters in field</div>';
+                break;
+            default:
+                $result = '<div class="span alert alert-danger fade in">Unknown Error Occurred</div>';
+                debug_to_console( $e[message] );
+                break;
+        }
     }
 
     function insert_employee($userName, $firstName, $lastName, $email, $contact) {
