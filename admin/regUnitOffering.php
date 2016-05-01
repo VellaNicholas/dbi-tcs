@@ -2,18 +2,9 @@
     session_start();
     //Includes the required files for the page
     include '../global/ini.php';
-    include '../global/navigation.php'; 
-
-    function debug_to_console( $data ) {
-
-        if ( is_array( $data ) )
-            $output = "<script>console.log( 'Debug Objects: " . implode( ',', $data) . "' );</script>";
-        else
-            $output = "<script>console.log( 'Debug Objects: " . $data . "' );</script>";
-    
-        echo $output;
-    }
-
+    include '../global/navigation.php';
+    include 'dataAccess.php';
+    include './controller/contRegUnitOffering.php';
 ?>
 
 <!DOCTYPE html>
@@ -31,67 +22,7 @@
 
         //This block connects to the database and puts the unit of study details into the database when the button is pressed
         if (isset($_POST["submit"])) {
-            
-            //Check ID
-            if (empty($_POST['unit_ID'])) {
-               $errID = 'Please enter a Unit ID';
-            } else {
-                $unitID = test_input($_POST["unit_ID"]);                
-            }
-
-            //Check ID
-            if (empty($_POST['unit_Convenor'])) {
-               $errConvenor = 'Please enter a Unit Convenor';
-            } else {
-                $unitConvenor = test_input($_POST["unit_Convenor"]);
-            }
-
-            $unitSemester = test_input($_POST["unit_Semester"]);
-            $unitYear = test_input($_POST["unit_Year"]);
-
-
-            debug_to_console($unitID);
-            debug_to_console($unitConvenor);
-			debug_to_console($unitSemester);
-			debug_to_console($unitYear);
-
-            //if there are no errors, submit to the DB otherwise the exception is displayed to the user
-            if (!$errID && !$errConvenor){
-
-                $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Employee successfully registered!</div>';
-
-                $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
-
-                $sql = 'BEGIN OFFER_UNIT(:unitid, :teachingperiod, :year, :convenor); END;';
-
-                $stmt = oci_parse($conn,$sql);
-
-                //Bind the inputs
-                oci_bind_by_name($stmt, ':unitid', $unitID); //input //Change
-                oci_bind_by_name($stmt, ':teachingperiod', $unitSemester); //input // Change
-                oci_bind_by_name($stmt, ':year', $unitYear);//input //Change 
-                oci_bind_by_name($stmt, ':convenor', $unitConvenor); //input //Change
-                
-
-                oci_execute($stmt);
-                
-
-                $e = oci_error($stmt);
-                //TODO Exception handeling
-                echo htmlentities($e['message']);
-                
-                oci_commit($conn);
-
-            } else {
-                $result='<div class="span alert alert-danger fade in"><strong>Oops! </strong>something unexpected happened! Please try registering this Employee later.</div>';
-            }
-        }           
-        //trims data and prevents scripting and sql injections
-        function test_input($data) {
-            $data = trim($data);
-            $data = stripslashes($data);
-            $data = htmlspecialchars($data);
-            return $data;
+            $result = insert_to_database($unitID, $unitSemester, $unitYear, $unitConvenor);            
         }
     ?>
     <?php

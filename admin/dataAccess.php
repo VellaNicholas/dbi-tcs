@@ -213,9 +213,6 @@
 
     function edit_unit(&$id, &$unitName, &$unitDescription) {
         $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
-
-        debug_to_console( 'In Data Access Block: ' . $id . $unitName . $unitDescription );
-
         
         $sql = 'BEGIN UPDATE_UNIT(:unitid, :unitname, :unitdescription); END;';
         $stmt = oci_parse($conn,$sql);
@@ -230,6 +227,7 @@
 
         $e = oci_error($stmt);
 
+        //TODO: Exception Handling
         switch ($e['code']) {
             case "":
                 $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Student successfully updated!</div>';
@@ -247,6 +245,43 @@
         }
 
         return $result;
+    }
+
+    function insert_unit_offering(&$unitID, &$unitSemester, &$unitYear, &$unitConvenor) {
+        $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
+
+        $sql = 'BEGIN OFFER_UNIT(:unitid, :teachingperiod, :year, :convenor); END;';
+        $stmt = oci_parse($conn,$sql);
+
+        //Bind the inputs
+        oci_bind_by_name($stmt, ':unitid', $unitID); //input 
+        oci_bind_by_name($stmt, ':teachingperiod', $unitSemester); //input
+        oci_bind_by_name($stmt, ':year', $unitYear);//input  
+        oci_bind_by_name($stmt, ':convenor', $unitConvenor); //input 
+
+        oci_execute($stmt);
+        oci_commit($conn);
+        
+        $e = oci_error($stmt);
+        //TODO Exception handling
+        switch ($e['code']) {
+            case "":
+                $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Student successfully updated!</div>';
+                break;
+            case 1:
+                $result = '<div class="span alert alert-danger fade in">Student with this ID already exists</div>';
+                break;
+            case 12899:
+                $result = '<div class="span alert alert-danger fade in">Too many characters in field</div>';
+                break;
+            default:
+                $result = '<div class="span alert alert-danger fade in">Unknown Error Occurred</div>';
+                debug_to_console( $e[message] );
+                break;
+        }
+        
+        return $result;
+
     }
 
     function debug_to_console( $data ) {
