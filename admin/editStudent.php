@@ -29,7 +29,7 @@
 
     <?php
         if (! IsAdmin() ) {
-            include '../global/noPermissions';
+            include '../global/noPermissions.php';
             exit;
         };
     ?>

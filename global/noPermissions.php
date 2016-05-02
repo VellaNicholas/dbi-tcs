@@ -3,7 +3,6 @@
 
 <head>
     <title>Not Allowed to View This Page</title>
-    <?php include '../global/ini.php'; ?>
 </head>
 
 <body>
@@ -20,7 +19,7 @@
                 <!-- /.col-lg-12 -->
             </div>
             <div class="row">
-                <div class="col-lg-6"> Please select an option in the sidebar to continue</div>
+                <div class="col-lg-6"> Please login with appropriate credentials to continue</div>
                 <!-- /.col-lg-12 -->
             </div>
             
