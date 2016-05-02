@@ -24,7 +24,7 @@
     ?>
     <?php
         if (! IsAdmin() ) {
-            include '../global/noPermissions/global/permissions.php';
+            include '../global/noPermissions';
             exit;
         };
     ?>

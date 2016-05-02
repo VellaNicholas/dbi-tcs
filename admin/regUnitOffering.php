@@ -29,7 +29,7 @@
 
         //stops the page load for all except admins
         if (! IsAdmin() ) {
-            include '../global/noPermissions/global/permissions.php';
+            include '../global/noPermissions';
             exit;
         };
     ?>
