@@ -24,7 +24,6 @@
         }           
     ?>
     <?php
-    
         //stops the page load for all except admins
         if (! IsAdmin() ) {
             include '../global/noPermissions.php';
