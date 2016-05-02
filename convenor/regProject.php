@@ -1,4 +1,5 @@
 <?php 
+    //Includes all relevant files
     session_start();
     include '../global/ini.php';
     include '../global/navigation.php';
