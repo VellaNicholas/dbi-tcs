@@ -256,6 +256,9 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                         <!-- Will output an error if file selected in browser is not a csv. -->
                                         <p id="csvError" class="text-danger"></p>
 
+                                        <!-- TO OUTPUT ALL RESULTS OF CSV VALIDATION -->
+                                        <!-- <textarea readonly>HIDE THIS! ONLY USE THIS TO DISPLAY OUTPUT ONCE CSV VALIDATION IS DONE YO</textarea> -->
+
                                         <!-- NEW TECH! YAY! 
                                         Maybe clear the fileInput control when the CANCEL button is pressed? Are there any repercussions? Do it later.
                                         AJAX is absolutely required to send variables (the cleaned rows) to PHP for further validation and entry to database
@@ -265,11 +268,12 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                             //Simply handles when the upload button is pressed. Messy, but it works. As it stands, there is no
                                             //simpler way of doing this with the fileInput js plugin installed.
 
-                                            //When the user selects a file, look for the btn that contains the index = 3
+                                            //  --ENTRY POINT--
+                                            //When the user selects a file, look for the btn that contains the index = 3 (upload) and the button that contains the index = 1 (remove).
                                             $(document).ready(function() {
                                                 document.getElementById("csvInput").addEventListener('change', function(){
-                                                    //The file input upload button is index = 3 of all btn classes on page. Refer to this button as i=3. Again, no way to make
-                                                    //this simpler. Research this further.
+                                                    //The file input upload button is index = 3 of all btn classes on page. The remove button is index = 1. Refer to these buttons as i=3 and i=1 respectively. Again, no way to make this simpler. Research this further.
+                                                    var removeBtn = document.getElementsByClassName("btn")[1];
                                                     var uploadBtn = document.getElementsByClassName("btn")[3];
     
                                                     //When the upload button is clicked, get the filename/filepath
@@ -279,12 +283,17 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                         console.log(file);
     
                                                         //move to Upload Data function later m8
-                                                        if (validateCSV(file)){
+                                                        if (loadValidCSV(file)){
                                                             console.log("ALLAH HAS BLESSED US, file is validated");
                                                         } else {
                                                             console.log("FUCK something went wrong, file is shit");
                                                         }
     
+                                                    });
+
+                                                    removeBtn.addEventListener("click", function(){
+                                                        //Clear the error messages on cancel.
+                                                        document.getElementById("csvError").innerHTML = "";
                                                     });
                                                 });
                                             });
@@ -307,14 +316,15 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                 }
                                             }
 
+                                            //Checks if the CSV file has the appropriate number of fields. If it doesn't, it rejects the file and spits back an error message.
                                             function validateNumFields(row, data){
                                                 var numFields = data[row].length;
                                                 if (numFields < 5 || numFields > 5){
-                                                    console.log("HARAM! INSUFFICIENT FIELDS FOUND");
+                                                    //ONE row could reject the whole file. Is this okay?
+                                                    document.getElementById("csvError").innerHTML = "The requested file does not have the correct number of fields. Ensure that ALL fields in the requested file strictly consists of 5 fields per row (username, firstName, lastName, email, contact)";
                                                     return false;
 
                                                 } else if (numFields == 5){
-                                                    console.log("HALAL FIELDS FOUND");
                                                     return true;
                                                 }
                                             }
@@ -323,9 +333,11 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                             function validateUsername(username){
                                                 //Apply validation logic here
                                                 var maxUserChars = 40;
-                                                var usernameError = "";
+                                                //var usernameOutput = "";
                                                 if (username == null || username == ""){
-                                                    console.log("NO USERNAME FOUND ERROR");
+                                                    return false;
+                                                } else {
+                                                    return true;
                                                 }
                                                 
                                             }
@@ -340,41 +352,88 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
 
                                             }
 
+                                            //FIX THIS ASAP
                                             function validateRow(row, data){
                                                 for (var item in data[row]){
+                                                    var output = "";
+                                                    //Put switch statement here
                                                     if (item == 0){
-                                                        validateUsername(data[row][item]);
+                                                        //Run the validateUsername function
+                                                        var usernameInput = validateUsername(data[row][item]);
+                                                        //If the validate function returns a string, output the error.
+                                                        if (usernameInput == false){
+                                                            return {type:"noUsernameErr", validated:false, row:row};
+                                                            break;
+                                                        //Else, the validation was successful (validation function should return a bool)
+                                                        } else {
+                                                            //Just for debugging CHANGE LATER
+                                                            output = "username successfully validated on row " + row;
+                                                            console.log(output);
+                                                            return {type:"success", validated:true, row:row};
+                                                        }
                                                     }
-                                                    //console.log(data[row][item]);
                                                 }
                                             }
+
+                                            function outputResults(rows, message){
+                                                if (rows.length == 0){
+                                                    return "";
+                                                } else {
+                                                    var rowsOutput = rows.toString();
+                                                    console.log(message + " ROWS: (" + rowsOutput + ")");
+                                                }
+                                            }
+
                                             
                                             //Main validation method. Loads data, then validates it.
-                                            function validateCSV(csvFile){
+                                            function loadValidCSV(csvFile){
                                                 if (isCSV(csvFile.name)) {
                                                     //Main validation code
+                                                    var validateMsg = "";
                                                     var reader = new FileReader();
                                                     reader.readAsText(csvFile);
+
                                                     reader.onload = function(event){
                                                         var csv = event.target.result;
                                                         var data = $.csv.toArrays(csv);
-                                                        console.log("data length: " + data.length);
+
+                                                        //Declare arrays for all possible output messages. THis will store the affected rows.
+                                                        var addedRows = [];
+                                                        var noUsernameErrRows = [];
+
+                                                        //For every row, 
                                                         for (var row in data){
+                                                            //Not entirely necessary, but i need to find a way to get rows before the for loop. Only realistically checks once though before breaking so...
                                                             if (validateNumFields(row, data) == false){
-                                                                //ONE row could reject the whole file. Is this okay?
-                                                                document.getElementById("csvError").innerHTML = "The requested file does not have the correct number of fields. Ensure that ALL fields in the requested file strictly consists of 5 fields per row (username, firstName, lastName, email, contact)";
                                                                 break;
                                                             }
-                                                            validateNumFields(row, data);
-                                                            validateRow(row, data);
+
+                                                            // If everything is all good, assign validateMsg with an error if validateRow() provides one.
+                                                            //If validateRow returns false, add violating row to array.
+                                                            var activeRow = validateRow(row,data);
+                                                            if (activeRow["validated"] == false){
+                                                                switch (activeRow["type"]){
+                                                                    case "noUsernameErr":
+                                                                        //do something
+                                                                        noUsernameErrRows.push(activeRow["row"]);
+                                                                        break;
+                                                                }
+
+                                                            } else {
+                                                                //Add row
+                                                                addedRows.push(activeRow["row"]);
+                                                            }
                                                         }
+
+                                                        outputResults(addedRows, "SUCCESSFULLY ADDED");
+                                                        outputResults(noUsernameErrRows, "NO USERNAME FOUND ERROR OCCURED ON");
                                                     }
                                                     return true;
                                                 } else {
                                                     document.getElementById("csvError").innerHTML = "The requested file is not a CSV. Please try again.";
                                                     return false;
                                                 }
-                                            }                                          
+                                            }                                         
                                         </script>
                                     </div>
                                     <div class="modal-footer">
