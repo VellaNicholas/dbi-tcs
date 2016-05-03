@@ -1,9 +1,14 @@
+<!-- UPON THE CONSUMPTION OF A HSP, ALLAH WILL BLESS THIS CODE AND BANISH ALL SYNTAX ERRORS AND COMPILATION ERRORS. MASHALLAH -->
+<!-- This page handles the presentation layer of the register employee page, available only to users with Admin permissions -->
 <?php 
     session_start();
     include '../global/ini.php';
     include '../global/navigation.php';
 ?>
 
+<!-- Having some issues with jQuery not loading properly, this ensures that jQuery works fine by downloading it straight
+from the source. Remember to add this to the jqueryref.php file, or alternatively, ini.php -->
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -90,14 +95,42 @@
             } else {
                 $result='<div class="span alert alert-danger fade in"><strong>Oops! </strong>something unexpected happened! Please try registering this Employee later.</div>';
             }
-        }           
+        }         
 
+        //Prevents XSS and SQL injection
         function test_input($data) {
             $data = trim($data);
             $data = stripslashes($data);
             $data = htmlspecialchars($data);
             return $data;
         }
+
+        //Remove later. Not necessary
+        function debug_to_console( $data ) {
+
+            if ( is_array( $data ) )
+                $output = "<script>console.log( 'Debug Objects: " . implode( ',', $data) . "' );</script>";
+            else
+                $output = "<script>console.log( 'Debug Objects: " . $data . "' );</script>";
+
+            echo $output;
+        }
+
+        /*function validate_emp_csv(){
+            $row = 1;
+            if (($handle = fopen("csvInput", "r+")) !== FALSE){
+                while (($data = fgetcsv($handle)) !== FALSE){
+                    $num = count($data);
+                    echo "<p> $num fields in line $row: <br /></p>\n";
+                    $row++;
+                    for ($c=0; $c < $num; $c++) {
+                        echo $data[$c] . "<br />\n";
+                    }
+                }
+            fclose($handle);
+            }
+        }*/
+
     ?>
     <?php
         if (! IsAdmin() ) {
@@ -109,7 +142,7 @@
         <div id="page-wrapper">
             <div class="row">
                 <div class="col-lg-12">
-                    <h1 class="page-header">Register Employee</h1>
+                    <h1 class="page-header">Register Employee v.i</h1>
                 </div>
                 <!-- /.col-lg-12 -->
             </div>
@@ -190,6 +223,23 @@
                             </fieldset>
                         </form>
 
+                        <!--<?php
+                            /*$row = 1;
+                            if (isset($_FILE["csvInput"])){
+                                if (($handle = fopen("csvInput", "r+")) !== FALSE){
+                                    while (($data = fgetcsv($handle)) !== FALSE){
+                                        $num = count($data);
+                                        echo "<p> $num fields in line $row: <br /></p>\n";
+                                        $row++;
+                                        for ($c=0; $c < $num; $c++) {
+                                            echo $data[$c] . "<br />\n";
+                                        }
+                                    }
+                                fclose($handle);
+                                }
+                            }
+                            */
+                        ?> -->
                         <!-- CSV MODAL -->
                         <div id="csvUpload" class="modal fade" role="dialog">
                             <div class="modal-dialog">
@@ -201,7 +251,112 @@
                                         <p>Please select a CSV file from your local machine to import</p>
                                         <br>
                                         <label class="control-label">Select CSV File</label>
-                                        <input id="csvInput" type="file" class="file" accept=".csv">
+                                        <input name="csvInput" id="csvInput" type="file" class="file" accept=".csv">
+
+                                        <!-- Will output an error if file selected in browser is not a csv. -->
+                                        <p id="notCsvError" class="text-danger"></p>
+
+                                        <!-- NEW TECH! YAY! 
+                                        Maybe clear the fileInput control when the CANCEL button is pressed? Are there any repercussions? Do it later.
+                                        AJAX is absolutely required to send variables (the cleaned rows) to PHP for further validation and entry to database
+                                        Inititalise csv upload javascript -->
+                                        <script type="text/javascript">
+        
+                                            //Simply handles when the upload button is pressed. Messy, but it works. As it stands, there is no
+                                            //simpler way of doing this with the fileInput js plugin installed.
+
+                                            //When the user selects a file, look for the btn that contains the index = 3
+                                            $(document).ready(function() {
+                                                document.getElementById("csvInput").addEventListener('change', function(){
+                                                    //The file input upload button is index = 3 of all btn classes on page. Refer to this button as i=3. Again, no way to make
+                                                    //this simpler. Research this further.
+                                                    var uploadBtn = document.getElementsByClassName("btn")[3];
+    
+                                                    //When the upload button is clicked, get the filename/filepath
+                                                    uploadBtn.addEventListener("click", function(){
+    
+                                                        var file = document.getElementById("csvInput").files[0];
+                                                        console.log(file);
+    
+                                                        //move to Upload Data function later m8
+                                                        if (validateCSV(file)){
+                                                            console.log("ALLAH HAS BLESSED US, file is validated");
+                                                        } else {
+                                                            console.log("FUCK something went wrong, file is shit");
+                                                        }
+    
+                                                    });
+                                                });
+                                            });
+    
+                                            //Retrieves the file extension by finding the substring after the character '.' and returns that substring
+                                            function getExtension(path) {
+                                                var parts = path.split('.');
+                                                return parts[parts.length - 1];
+                                            }
+                                            
+                                            //Checks if the provided filePath is actually a csv file. Does this by calling getExtension, and comparing 
+                                            //the result with "csv". Returns true if the file is a CSV.
+                                            function isCSV(csvPath){
+                                                var extension = getExtension(csvPath);
+                                                if (extension.toLowerCase() == "csv")
+                                                {
+                                                    return true;
+                                                } else {
+                                                    return false;
+                                                }
+                                            }
+
+                                            //Cannot be null. Max characters?
+                                            function validateUsername(username){
+                                                //Apply validation logic here
+                                                var maxUserChars = 20;
+                                                var usernameError = "";
+                                                if (username == null || username == ""){
+                                                    console.log("NO USERNAME FOUND ERROR");
+                                                }
+                                                
+                                            }
+
+                                            //Handles firstname and lastnames. Cannot contain numbers. Cannot be null. Max characters? Set to 40 to account for
+                                            //people with last names like: "Wolfeschlegelsteinhausenbergerdorff" (Yes, its actually a thing).
+                                            function validateName(name){
+                                                var maxNameChars = 40;
+                                            }
+
+                                            function validateEmail(email){
+
+                                            }
+
+                                            function validateRow(row, data){
+                                                for (var item in data[row]){
+                                                    if (item == 0){
+                                                        validateUsername(data[row][item]);
+                                                    }
+                                                    //console.log(data[row][item]);
+                                                }
+                                            }
+                                            
+                                            //Main validation method. Loads data, then validates it.
+                                            function validateCSV(csvFile){
+                                                if (isCSV(csvFile.name)) {
+                                                    //Main validation code
+                                                    var reader = new FileReader();
+                                                    reader.readAsText(csvFile);
+                                                    reader.onload = function(event){
+                                                        var csv = event.target.result;
+                                                        var data = $.csv.toArrays(csv);
+                                                        for (var row in data){
+                                                            validateRow(row, data);
+                                                        }
+                                                    }
+                                                    return true;
+                                                } else {
+                                                    document.getElementById("notCsvError").innerHTML = "The requested file is not a CSV. Please try again.";
+                                                    return false;
+                                                }
+                                            }                                          
+                                        </script>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-warning" data-dismiss="modal">Close</button>

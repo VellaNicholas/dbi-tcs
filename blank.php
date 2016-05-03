@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <?php
+    <?php       
         include 'adminnav.php'; 
         include 'permissions.php';
 
