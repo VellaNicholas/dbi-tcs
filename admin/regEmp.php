@@ -142,7 +142,7 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
         <div id="page-wrapper">
             <div class="row">
                 <div class="col-lg-12">
-                    <h1 class="page-header">Register Employee v.i</h1>
+                    <h1 class="page-header">Register Employee v.j</h1>
                 </div>
                 <!-- /.col-lg-12 -->
             </div>
@@ -254,7 +254,7 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                         <input name="csvInput" id="csvInput" type="file" class="file" accept=".csv">
 
                                         <!-- Will output an error if file selected in browser is not a csv. -->
-                                        <p id="notCsvError" class="text-danger"></p>
+                                        <p id="csvError" class="text-danger"></p>
 
                                         <!-- NEW TECH! YAY! 
                                         Maybe clear the fileInput control when the CANCEL button is pressed? Are there any repercussions? Do it later.
@@ -307,10 +307,22 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                 }
                                             }
 
+                                            function validateNumFields(row, data){
+                                                var numFields = data[row].length;
+                                                if (numFields < 5 || numFields > 5){
+                                                    console.log("HARAM! INSUFFICIENT FIELDS FOUND");
+                                                    return false;
+
+                                                } else if (numFields == 5){
+                                                    console.log("HALAL FIELDS FOUND");
+                                                    return true;
+                                                }
+                                            }
+
                                             //Cannot be null. Max characters?
                                             function validateUsername(username){
                                                 //Apply validation logic here
-                                                var maxUserChars = 20;
+                                                var maxUserChars = 40;
                                                 var usernameError = "";
                                                 if (username == null || username == ""){
                                                     console.log("NO USERNAME FOUND ERROR");
@@ -346,13 +358,20 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                     reader.onload = function(event){
                                                         var csv = event.target.result;
                                                         var data = $.csv.toArrays(csv);
+                                                        console.log("data length: " + data.length);
                                                         for (var row in data){
+                                                            if (validateNumFields(row, data) == false){
+                                                                //ONE row could reject the whole file. Is this okay?
+                                                                document.getElementById("csvError").innerHTML = "The requested file does not have the correct number of fields. Ensure that ALL fields in the requested file strictly consists of 5 fields per row (username, firstName, lastName, email, contact)";
+                                                                break;
+                                                            }
+                                                            validateNumFields(row, data);
                                                             validateRow(row, data);
                                                         }
                                                     }
                                                     return true;
                                                 } else {
-                                                    document.getElementById("notCsvError").innerHTML = "The requested file is not a CSV. Please try again.";
+                                                    document.getElementById("csvError").innerHTML = "The requested file is not a CSV. Please try again.";
                                                     return false;
                                                 }
                                             }                                          
