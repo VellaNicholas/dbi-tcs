@@ -1,3 +1,7 @@
+<!--
+    This file is responsible for the controller layer of the regStudent page. It contains business logic and validation.
+-->
+
 <?php  
 	//Prevents scripting and SQL injection
     function test_input($data) {
@@ -7,7 +11,10 @@
         return $data;
     }
 
+    //Validates all of the input from on the current page
     function validate_input(&$id, &$firstName, &$lastName, &$email, &$contact) {
+
+        //Check Student ID isn't empty
     	if (empty($_POST['stu_ID'])){
 
             $errID = 'Invalid student ID';
@@ -15,10 +22,9 @@
             $id = test_input($_POST["stu_ID"]);
         }
 
-        //VALIDATION
+        //Check Student ID matches business rules
         if (!is_numeric($id)){
-            $x = 'x';
-            $xPos = strpos($id, $x);
+            $xPos = strpos($id, 'x');
             if ($xPos != 7){
                 $errID = 'Invalid student ID';
             }
@@ -38,7 +44,7 @@
             $lastName = test_input($_POST["stu_LName"]);
         }
 
-        //Check email.
+        //Check email isn't empty
         if (empty($_POST['stu_Email'])) {
             $errEmail = 'Email address required';
         } else {
@@ -59,6 +65,7 @@
         }
 	}
 
+    //Validates the input, then if there are no errors in validation connects to the database and inserts the student.
 	function insert_to_database(&$id, &$firstName, &$lastName, &$email, &$contact) {
 		
 		validate_input($id, $firstName, $lastName, $email, $contact);

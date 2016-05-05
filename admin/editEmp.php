@@ -1,3 +1,7 @@
+<!--
+    This file is responsible for the view layer of the editStudent page. It controls user input and output.
+-->
+
 <?php 
     session_start();
     include '../global/ini.php';
