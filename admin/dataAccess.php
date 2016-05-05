@@ -1,5 +1,11 @@
+<!--
+    This files controls all communications between the application and the database
+-->
+
 <?php
 
+    //Connects to the database and inserts the student into the Student and Permissions tables
+    //Returns a successful message or a specified exception
     function insert_student(&$id, &$firstName, &$lastName, &$email, &$contact) {
         $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
 
@@ -36,6 +42,8 @@
         return $result;
     }
 
+    //Connects to the database and update the student in the Student table
+    //Returns a successful message or a specified exception
     function edit_student(&$id, &$firstName, &$lastName, &$email, &$contact) {
         $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
 
@@ -70,6 +78,8 @@
         return $result;
     }
 
+    //Connects to the database and accesses the student details
+    //Assigns the student details into the passed in perameters
     function get_student_details(&$id, &$firstName, &$lastName, &$email, &$contact) {
         $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
 
@@ -105,6 +115,8 @@
         }
     }
 
+    //Connects to the database and inserts the employee into the Employee and Permissions tables
+    //Returns a successful message or a specified exception
     function insert_employee($userName, $firstName, $lastName, $email, $contact) {
 
         $sql = 'BEGIN INSERT_EMPLOYEE(:username, :firstname, :lastname, :email, :contactno); END;';
@@ -144,6 +156,8 @@
 
     }
 
+    //Connects to the database and inserts the unit into the Unit Table
+    //Returns a successful message or a specified exception
     function insert_unit(&$unitID, &$unitName, &$unitDescription) {
         $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
 
@@ -179,6 +193,8 @@
         }
     }
 
+    //Connects to the database and accesses the unit details
+    //Assigns the unit details into the passed in perameters
     function get_unit_details(&$id, &$unitName, &$unitDescription) {
         $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
 
@@ -211,6 +227,8 @@
         }
     }
 
+    //Connects to the database and update the unit in the Unit table
+    //Returns a successful message or a specified exception
     function edit_unit(&$id, &$unitName, &$unitDescription) {
         $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
         
@@ -247,6 +265,8 @@
         return $result;
     }
 
+    //Connects to the database and inserts the UnitOffering in the UnitOffering table
+    //Returns a successful message or a specified exception
     function insert_unit_offering(&$unitID, &$unitSemester, &$unitYear, &$unitConvenor) {
         $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
 
@@ -284,6 +304,7 @@
 
     }
 
+    //Used for debugging of code during development, and when unknown exceptions occur
     function debug_to_console( $data ) {
 
         if ( is_array( $data ) )
@@ -292,6 +313,5 @@
             $output = "<script>console.log( 'Debug Objects: " . $data . "' );</script>";
     
         echo $output;
-        }
-
+    }
 ?>

@@ -57,7 +57,11 @@
                                     name="ass_ID"
                                     placeholder="Enter Assesment ID">
 
+<<<<<<< HEAD
                                     <?php echo "<p class='text-danger'>$errId</p>"; ?>
+=======
+                                    <?php echo "<p class='text-danger'>$errAssId</p>"; ?>
+>>>>>>> origin/master
                                 </div>
                                 <div class="form-group">
                                     <label>*Title</label>
@@ -78,12 +82,20 @@
                                 <div class="form-group">
                                     <label>*Individual or Group</label>
                                     <input class="form-control" 
+<<<<<<< HEAD
                                     name="ass_Individual"> 
                                     <option>Individual</option>
                                     <option>Group</option>
                                   </select>
                                 </div>
 
+=======
+                                    name="ass_Individual" 
+                                    placeholder="Enter isIndividualGroup">
+
+                                    <?php echo "<p class='text-danger'>$errIndividual</p>"; ?>
+                                </div>
+>>>>>>> origin/master
                                 <div class="form-group">
                                     <label>*Due Date</label>
                                     <input class="form-control" name="ass_DueDate" placeholder="Enter Due Date">
@@ -115,7 +127,10 @@
                                     <div class="modal-header">
                                         <h4 class="modal-title">Success!</h4>
                                     </div>
+<<<<<<< HEAD
                                     <div class="modal-body">
+=======
+>>>>>>> origin/master
                                         <p>Assesment successfully added!</p>
                                     </div>
                                     <div class="modal-footer">

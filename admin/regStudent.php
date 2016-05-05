@@ -1,3 +1,7 @@
+<!--
+    This file is responsible for the view layer of the regStudent page. It controls user input and output.
+-->
+
 <?php
     session_start();
     include '../global/ini.php'; 
@@ -18,23 +22,25 @@
         //Initalise variable to null
         $id = $firstName = $lastName = $email = $contact = $e = "";
 
-        //This block connects to the database and inputs the student details to the database
+        //When the submit button is pressed, call the database function from the controller layer
         if (isset($_POST["submit"])) {
             $result = insert_to_database($id, $firstName, $lastName, $email, $contact);            
         }           
     ?>
     <?php
-    
-        //stops the page load for all except admins
+        //Permits only Admins to view the page
         if (! IsAdmin() ) {
             include '../global/noPermissions.php';
             exit;
         };
     ?>
+
+    <!-- Begin page wrapper -->
     <div id="wrapper">
         <div id="page-wrapper">
             <div class="row">
                 <div class="col-lg-12">
+                <!-- Page Header -->
                     <h1 class="page-header">Register Student</h1>
                 </div>
                 <!-- /.col-lg-12 -->
@@ -43,14 +49,18 @@
             <!-- NEW ROW HERE -->
             <div class="row">
                 <div class="col-lg-6">
+                    <!-- Panel heading -->
                     <div class="panel panel-default">
                         <div class="panel-heading">
                             Enter Student Details
                         </div> 
-                    <div class="panel-body">            
+                    <!-- Panel body -->
+                    <div class="panel-body"> 
+                        <!-- Initialise form with POST method -->
                         <form role="form" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
                             <p class="help-block">All fields marked with * are mandatory.</p>
                             <fieldset>
+                                <!-- Begin register student input form controls -->
                                 <div class="form-group">
                                     <label>*Student ID</label>
                                     <input class="form-control"
@@ -88,9 +98,11 @@
                                     <input class="form-control" name="stu_Contact" placeholder="Enter phone number">
 
                                     <?php echo "<p class='text-danger'>$errContact</p>"; ?>                                    
-                                </div>                                                                 
+                                </div>                                          
+                                <!-- Submit Button --> 
                                 <input class="btn btn-lg btn-success btn-block" type="submit" name="submit" value="Register >>">
 
+                                <!-- Output the result of the transaction (success or failure) -->
                                 <div class="form-group">
                                     <div class="col-sm-10 col-sm-offset-2">
                                         <?php echo $result; ?>  
@@ -98,23 +110,6 @@
                                 </div>
                             </fieldset>
                         </form>
-                        <!-- MODALS -->
-                        <div id="successModal" class="modal fade" role="dialog" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h4 class="modal-title">Success!</h4>
-                                    </div>
-                                    <div class="modal-body">
-                                        <p>Student successfully added!</p>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-success btn-block" data-dismiss="modal">Return to Dashboard
-                                        </button>
-                                    </div>
-                                </div>    
-                            </div>
-                        </div>
                    </div>
                 </div>
             </div>
@@ -123,6 +118,7 @@
     </div>
     <!-- /#wrapper -->
 
+    <!-- include all javascript references -->
     <?php include '../global/jqueryref.php'; ?>
 </body>
 

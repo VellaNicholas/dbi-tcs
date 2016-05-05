@@ -1,3 +1,7 @@
+<!--
+    This file is responsible for the view layer of the regUnitOffering page. It controls user input and output.
+-->
+
 <?php 
     session_start();
     //Includes the required files for the page
@@ -20,23 +24,25 @@
         //Initialize Variables
         $unitID = $unitSemester = $unitYear = $unitConvenor = "";
 
-        //This block connects to the database and puts the unit of study details into the database when the button is pressed
+        //When the submit button is pressed, call the database function from the controller layer
         if (isset($_POST["submit"])) {
             $result = insert_to_database($unitID, $unitSemester, $unitYear, $unitConvenor);            
         }
     ?>
     <?php
-
-        //stops the page load for all except admins
+        //Permits only Admins to view the page
         if (! IsAdmin() ) {
             include '../global/noPermissions.php';
             exit;
         };
     ?>
+
+    <!-- Begin page wrapper -->
     <div id="wrapper">
         <div id="page-wrapper">
             <div class="row">
                 <div class="col-lg-12">
+                <!-- Page Header -->
                     <h1 class="page-header">Register Unit Of Study Offering</h1>
                 </div>
                 <!-- /.col-lg-12 -->
@@ -45,14 +51,18 @@
             <!-- NEW ROW HERE -->
             <div class="row">
                 <div class="col-lg-6">
+                    <!-- Panel heading -->
                     <div class="panel panel-default">
                         <div class="panel-heading">
                             Enter Unit Offering Details
                         </div> 
-                    <div class="panel-body">            
+                    <!-- Panel body -->
+                    <div class="panel-body">
+                        <!-- Initialise form with POST method -->
                         <form role="form" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
                             <p class="help-block">All fields marked with * are mandatory.</p>
                             <fieldset>
+                                <!-- Begin register unit offering input form controls -->
                                 <div class="form-group">
                                     <label>*Unit ID</label>
                                     <input class="form-control"
@@ -83,39 +93,25 @@
                                   <label for="unit_Year">Select Year:</label>
                                   <select class="form-control" id="unit_Year
                                   " name="unit_Year">
+                                    <!--TODO: Dynamically Generate:-->
                                     <option>2017</option>
                                     <option>2018</option>
                                     <option>2019</option>
                                     <option>2020</option>
                                   </select>
                                 </div>
-                                                                                           
+
+                                <!-- Submit Button -->                  
                                 <input class="btn btn-lg btn-success btn-block" type="submit" name="submit" value="Register >>">
 
-                                    <div class="form-group">
-                                        <div class="col-sm-10 col-sm-offset-2">
-                                            <?php echo $result; ?>  
-                                        </div>
+                                <!-- Output the result of the transaction (success or failure) -->
+                                <div class="form-group">
+                                    <div class="col-sm-10 col-sm-offset-2">
+                                        <?php echo $result; ?>  
                                     </div>
+                                </div>
                             </fieldset>
                         </form>
-                        <!-- MODALS -->
-                        <div id="successModal" class="modal fade" role="dialog" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h4 class="modal-title">Success!</h4>
-                                    </div>
-                                    <div class="modal-body">
-                                        <p>Unit successfully offered!</p>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-success btn-block" data-dismiss="modal">Return to Dashboard
-                                        </button>
-                                    </div>
-                                </div>    
-                            </div>
-                        </div>
                    </div>
                 </div>
             </div>
@@ -124,6 +120,7 @@
     </div>
     <!-- /#wrapper -->
 
+    <!-- include all javascript references -->
     <?php include '../global/jqueryref.php'; ?>
 </body>
 

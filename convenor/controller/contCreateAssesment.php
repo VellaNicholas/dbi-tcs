@@ -11,7 +11,10 @@
     	    
             //Check ID
             if (empty($_POST['ass_ID'])) {
+<<<<<<< HEAD
                $errID = 'Please enter an Assignment ID';
+=======
+>>>>>>> origin/master
             } else {
                 $ass_ID = test_input($_POST["ass_ID"]);                
             }
@@ -29,7 +32,10 @@
             }
 
             if (empty($_POST['ass_Individual'])){
+<<<<<<< HEAD
                 $errIndividual = 'Is this an Individual or Group Assignment?';
+=======
+>>>>>>> origin/master
             } else {
                 $ass_Individual = test_input($_POST["ass_Individual"]);
             }
@@ -50,9 +56,13 @@
 		
 		validate_input($ass_ID, $ass_Title, $ass_Description, $ass_Individual, $ass_DueDate, $ass_ProjectID);
         //The ones below here are the errors don't forget to change them cunt
+<<<<<<< HEAD
 		if (!$errID && !$errTitle && !$errDescription && !$errIndividual && !$errDueDate && !$errProjectID){
 
             $result = insert_assignment($ass_ID, $ass_Title, $ass_Description, $ass_Individual, $ass_DueDate, $ass_ProjectID);
+=======
+
+>>>>>>> origin/master
         }
 
         return $result;
