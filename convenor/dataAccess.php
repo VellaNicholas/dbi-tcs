@@ -2,7 +2,6 @@
 
     function insert_project(&$pro_unit_ID, &$pro_team_ID, &$pro_ID, &$pro_Description, &$pro_Semester, &$pro_Year) {
         $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
-
         $sql = 'BEGIN INSERT_PROJECT(:prounitid, :proteamid, :proid, :prodescription, :prosemester, :proyear); END;';
 
         $stmt = oci_parse($conn,$sql);
