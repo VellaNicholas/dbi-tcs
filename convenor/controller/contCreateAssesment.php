@@ -1,3 +1,5 @@
+<!-- Controller file is called by Create Assesment file, checks that fields are not empty and calls DataAccess file to commit to database. -->
+
 <?php  
 	//Prevents scripting and SQL injection
     function test_input($data) {
@@ -11,38 +13,40 @@
     	    
             //Check ID
             if (empty($_POST['ass_ID'])) {
-
                $errID = 'Please enter an Assignment ID';
-
             } else {
                 $ass_ID = test_input($_POST["ass_ID"]);                
             }
-            //Check last name
+            
+            //Check assesment title
             if (empty($_POST['ass_Title'])) {
                 $errTitle = 'Place enter an Assignment Title';
             } else {
                 $ass_Title = test_input($_POST["ass_Title"]);
             }
-
+            
+            //Check assesment description
             if (empty($_POST['ass_Description'])){
                 $errDescription = 'Please enter a Project ID';
             } else {
                 $ass_Description = test_input($_POST["ass_Description"]);
             }
-
+            
+            //Check whether assesment is individual or group
             if (empty($_POST['ass_Individual'])){
-
                 $errIndividual = 'Is this an Individual or Group Assignment?';
-
             } else {
                 $ass_Individual = test_input($_POST["ass_Individual"]);
             }
 
+            //Check assesment due date
             if (empty($_POST['ass_DueDate'])){
                 $errDueDate = 'Please enter a Due Date';
             } else {
                 $ass_DueDate = test_input($_POST["ass_DueDate"]);
             }
+
+            //Check assesment project ID
             if (empty($_POST['ass_ProjectID'])){
                 $errProjectID = 'Please enter a Project ID';
             } else {
@@ -50,6 +54,7 @@
             }
 	}
 
+    //Function inserts the data, into the database, validates the input and checks there are no errors. 
 	function insert_to_database(&$ass_ID, &$ass_Title, &$ass_Description, &$ass_Individual, &$ass_DueDate, &$ass_ProjectID) {
 		
 		validate_input($ass_ID, $ass_Title, $ass_Description, $ass_Individual, $ass_DueDate, $ass_ProjectID);
