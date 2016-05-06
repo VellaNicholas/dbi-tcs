@@ -286,7 +286,7 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                         if (loadValidCSV(file)){
                                                             console.log("ALLAH HAS BLESSED US, file is validated");
                                                         } else {
-                                                            console.log("FUCK something went wrong, file is shit");
+                                                            console.log("FUCK something went wrong, file is haram");
                                                         }
     
                                                     });
@@ -329,24 +329,32 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                 }
                                             }
 
+                                            function isEmpty(str) {
+                                                return typeof str == 'string' && !str.trim() || typeof str == 'undefined' || str === null;
+                                            }
                                             //Cannot be null. Max characters?
-                                            function validateUsername(username){
+                                            function validateName(name){
                                                 //Apply validation logic here
                                                 var maxUserChars = 40;
                                                 //var usernameOutput = "";
-                                                if (username == null || username == ""){
-                                                    return false;
+                                                console.log(name);
+                                                if (isEmpty(name)){
+                                                    return {type:"missingField", validated:false};
+                                                } else if (name.length > maxUserChars) {
+                                                    return {type:"maxChars", validated:false};
                                                 } else {
                                                     return true;
                                                 }
                                                 
                                             }
 
+                                            function validateEmail(email){
+                                                
+                                            }
+
                                             //Handles firstname and lastnames. Cannot contain numbers. Cannot be null. Max characters? Set to 40 to account for
                                             //people with last names like: "Wolfeschlegelsteinhausenbergerdorff" (Yes, its actually a thing).
-                                            function validateName(name){
-                                                var maxNameChars = 40;
-                                            }
+
 
                                             function validateEmail(email){
 
@@ -354,15 +362,74 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
 
                                             //FIX THIS ASAP
                                             function validateRow(row, data){
-                                                for (var item in data[row]){
+                                                row_loop:
+                                                for (var field in data[row]){
                                                     var output = "";
                                                     //Put switch statement here
-                                                    if (item == 0){
-                                                        //Run the validateUsername function
-                                                        var usernameInput = validateUsername(data[row][item]);
+                                                    switch(field){
+                                                        //If statement here for all validation types (student vs employee)
+                                                        //Put it inside the case '0' statement.
+                                                        //Validate first field
+                                                        case '0':
+                                                            var usernameInput = validateName(data[row][field]);
+                                                            //If the validate function returns a string, output the error.
+                                                            if (usernameInput["validated"] == false){
+                                                                return {type:usernameInput["type"], origin:0, validated:false, row:Number(row) + 1};
+                                                            } else {
+                                                                break;
+                                                            }
+                                                        case '1':
+                                                            var firstnameInput = validateName(data[row][field]);
+                                                            //If the validate function returns a string, output the error.
+                                                            if (firstnameInput["validated"] == false){
+
+                                                                return {type:firstnameInput["type"], origin:1, validated:false, row:Number(row) + 1};
+                                                            } else {
+                                                                break;
+                                                            }
+                                                        /*case '2':
+                                                            var usernameInput = validateName(data[row][field]);
+                                                            //If the validate function returns a string, output the error.
+                                                            if (usernameInput["validated"] == false){
+
+                                                                return {type:usernameInput["type"], validated:false, row:row};
+                                                            } else {
+                                                                break;
+                                                            }
+                                                        case '3':
+                                                            var usernameInput = validateName(data[row][field]);
+                                                            //If the validate function returns a string, output the error.
+                                                            if (usernameInput["validated"] == false){
+
+                                                                return {type:usernameInput["type"], validated:false, row:row};
+                                                            } else {
+                                                                break;
+                                                            }
+                                                        case '4':
+                                                            var usernameInput = validateName(data[row][field]);
+                                                            //If the validate function returns a string, output the error.
+                                                            if (usernameInput["validated"] == false){
+
+                                                                return {type:usernameInput["type"], validated:false, row:row};
+                                                            } else {
+                                                                break;
+                                                            } */
+
+
+                                                        default:
+                                                            break;
+                                                    }
+
+                                                    /*if (field == 0){
+                                                        //Run the validateName function
+                                                        var usernameInput = validateName(data[row][field]);
                                                         //If the validate function returns a string, output the error.
                                                         if (usernameInput == false){
-                                                            return {type:"noUsernameErr", validated:false, row:row};
+                                                            switch(usernameInput["type"]){
+                                                                case "missingField":
+                                                                return {type:usernameInput["type"], validated:false, row:row};
+                                                                break;
+                                                            }
                                                             break;
                                                         //Else, the validation was successful (validation function should return a bool)
                                                         } else {
@@ -371,16 +438,29 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                             console.log(output);
                                                             return {type:"success", validated:true, row:row};
                                                         }
-                                                    }
+                                                    }*/
                                                 }
+                                                return {validated:true, type:"success", row:row};
                                             }
 
-                                            function outputResults(rows, message){
+                                            function outputResults(rows, type, field){
                                                 if (rows.length == 0){
                                                     return "";
                                                 } else {
                                                     var rowsOutput = rows.toString();
-                                                    console.log(message + " ROWS: (" + rowsOutput + ")");
+                                                    var message = "";
+                                                    switch (type){
+                                                        case "missingField":
+                                                            message = "No " + field + " found on";
+                                                            break;
+                                                        case "maxChars":
+                                                            message = field + " has exceeded maximum characters on";
+                                                            break;
+                                                        case "success":
+                                                            message = "Successfully added";
+                                                            break;
+                                                    }
+                                                    console.log(message + " rows: (" + rowsOutput + ")");
                                                 }
                                             }
 
@@ -400,12 +480,16 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                         //Declare arrays for all possible output messages. THis will store the affected rows.
                                                         var addedRows = [];
                                                         var noUsernameErrRows = [];
+                                                        var userMaxChars = [];
+                                                        var noFnameErrRows = [];
+                                                        var fnameMaxChars = [];
 
                                                         //For every row, 
                                                         for (var row in data){
                                                             //Not entirely necessary, but i need to find a way to get rows before the for loop. Only realistically checks once though before breaking so...
                                                             if (validateNumFields(row, data) == false){
-                                                                break;
+                                                                //break;
+                                                                return false;
                                                             }
 
                                                             // If everything is all good, assign validateMsg with an error if validateRow() provides one.
@@ -413,20 +497,39 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                             var activeRow = validateRow(row,data);
                                                             if (activeRow["validated"] == false){
                                                                 switch (activeRow["type"]){
-                                                                    case "noUsernameErr":
-                                                                        //do something
-                                                                        noUsernameErrRows.push(activeRow["row"]);
+                                                                    case "missingField":
+                                                                        switch (activeRow["origin"]){
+                                                                            case 0:
+                                                                                noUsernameErrRows.push(activeRow["row"]);
+                                                                                break; 
+                                                                            case 1:
+                                                                                noFnameErrRows.push(activeRow["row"]);
+                                                                                break;
+                                                                        }
                                                                         break;
+                                                                    case "maxChars":
+                                                                        switch (activeRow["origin"]){
+                                                                            case 0:
+                                                                                userMaxChars.push(activeRow["row"]);
+                                                                                break;
+                                                                            case 1:
+                                                                                fnameMaxChars.push(activeRow["row"]);
+                                                                                break;
+                                                                        }
+                                                                        break;  
                                                                 }
 
                                                             } else {
                                                                 //Add row
-                                                                addedRows.push(activeRow["row"]);
+                                                                addedRows.push(Number(activeRow["row"]) + 1);
                                                             }
                                                         }
 
-                                                        outputResults(addedRows, "SUCCESSFULLY ADDED");
-                                                        outputResults(noUsernameErrRows, "NO USERNAME FOUND ERROR OCCURED ON");
+                                                        outputResults(addedRows, "success", "");
+                                                        outputResults(noUsernameErrRows, "missingField", "Username");
+                                                        outputResults(noFnameErrRows, "missingField", "Firstname");
+                                                        outputResults(userMaxChars, "maxChars", "Username");
+                                                        outputResults(fnameMaxChars, "maxChars", "Firstname");
                                                     }
                                                     return true;
                                                 } else {
