@@ -332,12 +332,13 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                             function isEmpty(str) {
                                                 return typeof str == 'string' && !str.trim() || typeof str == 'undefined' || str === null;
                                             }
+                                            function isNumeric(n) {
+                                                return !isNaN(parseFloat(n)) && isFinite(n);
+                                            }     
                                             //Cannot be null. Max characters?
                                             function validateName(name){
                                                 //Apply validation logic here
                                                 var maxUserChars = 40;
-                                                //var usernameOutput = "";
-                                                console.log(name);
                                                 if (isEmpty(name)){
                                                     return {type:"missingField", validated:false};
                                                 } else if (name.length > maxUserChars) {
@@ -348,17 +349,34 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                 
                                             }
 
-                                            function validateEmail(email){
-                                                
+                                            function validateEmail(email) {
+                                                var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                                                if (isEmpty(email)){
+                                                    return {type:"missingField", validated:false};
+                                                } else if (re.test(email) == false){
+                                                    return {type:"invalidFormat", validated:false};
+                                                } else {
+                                                    return true;
+                                                }
+                                            }
+
+                                            //can handle IDs and contact numbers
+                                            function validateNumbers(number) {
+                                                var maxNum = 15;
+
+                                                if (isEmpty(number) == true){
+                                                    return true;
+                                                } else if (isNumeric(number) == false || number.match(/[a-z]/i)){
+                                                    return {type:"notNumber", validated:false};
+                                                } else if (number.length > 15){
+                                                    return {type:"maxChars", validated:false};
+                                                } else {
+                                                    return true;
+                                                }
                                             }
 
                                             //Handles firstname and lastnames. Cannot contain numbers. Cannot be null. Max characters? Set to 40 to account for
                                             //people with last names like: "Wolfeschlegelsteinhausenbergerdorff" (Yes, its actually a thing).
-
-
-                                            function validateEmail(email){
-
-                                            }
 
                                             //FIX THIS ASAP
                                             function validateRow(row, data){
@@ -387,33 +405,33 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                             } else {
                                                                 break;
                                                             }
-                                                        /*case '2':
-                                                            var usernameInput = validateName(data[row][field]);
+                                                        case '2':
+                                                            var surnameInput = validateName(data[row][field]);
                                                             //If the validate function returns a string, output the error.
-                                                            if (usernameInput["validated"] == false){
+                                                            if (surnameInput["validated"] == false){
 
-                                                                return {type:usernameInput["type"], validated:false, row:row};
+                                                                return {type:surnameInput["type"], origin:2, validated:false, row:Number(row) + 1};
                                                             } else {
                                                                 break;
                                                             }
                                                         case '3':
-                                                            var usernameInput = validateName(data[row][field]);
+                                                            var emailInput = validateEmail(data[row][field]);
                                                             //If the validate function returns a string, output the error.
-                                                            if (usernameInput["validated"] == false){
+                                                            if (emailInput["validated"] == false){
 
-                                                                return {type:usernameInput["type"], validated:false, row:row};
+                                                                return {type:emailInput["type"], origin:3, validated:false, row:Number(row) + 1};
                                                             } else {
                                                                 break;
                                                             }
                                                         case '4':
-                                                            var usernameInput = validateName(data[row][field]);
+                                                            var contactInput = validateNumbers(data[row][field]);
                                                             //If the validate function returns a string, output the error.
-                                                            if (usernameInput["validated"] == false){
+                                                            if (contactInput["validated"] == false){
 
-                                                                return {type:usernameInput["type"], validated:false, row:row};
+                                                                return {type:contactInput["type"], origin:4, numType:"contact", validated:false, row:Number(row) + 1};
                                                             } else {
                                                                 break;
-                                                            } */
+                                                            }
 
 
                                                         default:
@@ -456,6 +474,12 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                         case "maxChars":
                                                             message = field + " has exceeded maximum characters on";
                                                             break;
+                                                        case "invalidFormat":
+                                                            message = "Email is incorrectly formatted on";
+                                                            break;
+                                                        case "notNumber":
+                                                            message = field + " is not numeric on";
+                                                            break;
                                                         case "success":
                                                             message = "Successfully added";
                                                             break;
@@ -478,11 +502,29 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                         var data = $.csv.toArrays(csv);
 
                                                         //Declare arrays for all possible output messages. THis will store the affected rows.
+                                                        //Successful rows
                                                         var addedRows = [];
+
+                                                        //Username errors
                                                         var noUsernameErrRows = [];
                                                         var userMaxChars = [];
+
+                                                        //Firstname errors
                                                         var noFnameErrRows = [];
                                                         var fnameMaxChars = [];
+
+                                                        //Surname errors
+                                                        var noSnameErrRows = [];
+                                                        var snameMaxChars = [];
+
+                                                        //Email errors
+                                                        var noEmailErrRows = [];
+                                                        var badEmailFormat = [];
+
+                                                        //Contact number errors
+                                                        var contactNotNumeric = [];
+                                                        var contactMaxChars = [];
+
 
                                                         //For every row, 
                                                         for (var row in data){
@@ -505,6 +547,12 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                                             case 1:
                                                                                 noFnameErrRows.push(activeRow["row"]);
                                                                                 break;
+                                                                            case 2:
+                                                                                noSnameErrRows.push(activeRow["row"]);
+                                                                                break;
+                                                                            case 3:
+                                                                                noEmailErrRows.push(activeRow["row"]);
+                                                                                break;
                                                                         }
                                                                         break;
                                                                     case "maxChars":
@@ -515,8 +563,23 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                                             case 1:
                                                                                 fnameMaxChars.push(activeRow["row"]);
                                                                                 break;
+                                                                            case 2:
+                                                                                snameMaxChars.push(activeRow["row"]);
+                                                                                break;
+                                                                            case 4: 
+                                                                                contactMaxChars.push(activeRow["row"]);
+                                                                                break;
                                                                         }
-                                                                        break;  
+                                                                        break; 
+                                                                    case "invalidFormat":
+                                                                        badEmailFormat.push(activeRow["row"]);
+                                                                        break; 
+                                                                    case "notNumber":
+                                                                        switch (activeRow["numType"]){
+                                                                            case "contact":
+                                                                                contactNotNumeric.push(activeRow["row"]);
+                                                                                break;
+                                                                        }
                                                                 }
 
                                                             } else {
@@ -526,10 +589,26 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                         }
 
                                                         outputResults(addedRows, "success", "");
+
+                                                        //Ouput all missing fields first
                                                         outputResults(noUsernameErrRows, "missingField", "Username");
                                                         outputResults(noFnameErrRows, "missingField", "Firstname");
+                                                        outputResults(noSnameErrRows, "missingField", "Surname");
+                                                        outputResults(noEmailErrRows, "missingField", "Email");
+
+                                                        //Output max characters
                                                         outputResults(userMaxChars, "maxChars", "Username");
                                                         outputResults(fnameMaxChars, "maxChars", "Firstname");
+                                                        outputResults(snameMaxChars, "maxChars", "Surname");
+                                                        outputResults(contactMaxChars, "maxChars", "Contact");
+
+                                                        //Output bad email format
+                                                        outputResults(badEmailFormat, "invalidFormat", "Email");
+
+                                                        //Ouput not numeric
+                                                        outputResults(contactNotNumeric, "notNumber", "Contact");
+
+
                                                     }
                                                     return true;
                                                 } else {
