@@ -17,11 +17,11 @@
 
 <body>
     <?php
-        $proUnitID = $proTeamID = $proID = $proDescription = $proSemester = $proYear = "";
+        $proUnitID =  $proID = $proDescription = $proSemester = $proYear = "";
 
         //Check if submit button is pressed
         if (isset($_POST["submit"])) {
-            $result = insert_to_database($proUnitID, $proTeamID, $proID, $proDescription, $proSemester, $proYear);
+            $result = insert_to_database($proUnitID, $proID, $proDescription, $proSemester, $proYear);
         }
     ?>
     <?php
@@ -50,6 +50,23 @@
                         <form role="form" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
                             <p class="help-block">All fields marked with * are mandatory.</p>
                             <fieldset>
+                            <div class="form-group">
+                                    <label>*Unit ID</label>
+                                    <input class="form-control"
+                                    name="proUnitID"
+                                    placeholder="Enter Unit ID">
+
+                                   <?php echo "<p class='text-danger'>$errProUnitID</p>"; ?>
+                                </div>
+
+                                    <div class="form-group">
+                                    <label>*Project ID</label>
+                                    <input class="form-control"
+                                    name="proID"
+                                    placeholder="Enter Project ID">
+
+                                   <?php echo "<p class='text-danger'>$errProID</p>"; ?>
+                                </div> 
                                 <div class="form-group">
                                  <!-- Div for Semester -->
                                   <label for="pro_Semester">*Select Semester:</label>
@@ -73,35 +90,7 @@
                                   </select>
                                 </div>
                                          
-                                <div class="form-group">
-                                    <label>*Unit ID</label>
-                                    <input class="form-control"
-                                    name="proUnitID"
-                                    placeholder="Enter Unit ID">
-
-                                   <?php echo "<p class='text-danger'>$errProUnitID</p>"; ?>
-                                </div>
-
-                                <div class="form-group">
-                                    <label>*Team ID</label>
-                                    <input class="form-control"
-                                    name="proTeamID"
-                                    placeholder="Enter Team ID">
-
-                                   <?php echo "<p class='text-danger'>$errProTeamID</p>"; ?>
-                                </div> 
-
-                                <div class="form-group">
-                                    <label>*Project ID</label>
-                                    <input class="form-control"
-                                    name="proID"
-                                    placeholder="Enter Project ID">
-
-                                   <?php echo "<p class='text-danger'>$errProID</p>"; ?>
-                                </div> 
-
-
-                                <div class="form-group">
+                                    <div class="form-group">
                                     <label>*Description</label>
                                     <input class="form-control" 
                                     rows="4"

@@ -7,7 +7,7 @@
         return $data;
     }
 
-    function validate_input(&$proUnitID,  &$proID, &$proDescription, &$proSemester, &$proYear) {
+    function validate_input(&$proUnitID, &$proID, &$proDescription, &$proSemester, &$proYear) {
     	    
             //Check ID
             if (empty($_POST['proUnitID'])) {
@@ -39,16 +39,32 @@
             }
 	}
 
-	function insert_to_database(&$proUnitID,  &$proID, &$proDescription, &$proSemester, &$proYear) {
+	function edit_project(&$proUnitID, &$proID, &$proDescription, &$proSemester, &$proYear) {
 		
 		validate_input($proUnitID, $proID, $proDescription, $proSemester, $proYear);
-        //The ones below here are the errors don't forget to change them cunt
-		if (!$errProUnitID && !$errProID && !$errProDescription && !$errProSemester && !$errProYear){
-
-            $result = insert_project($proUnitID, $proTeamID, $proID, $proDescription, $proSemester, $proYear);
+        
+		if (!$errProDescription && !$errProSemester && !$errProYear){
+            $result = insert_project($proUnitID, $proID, $proDescription, $proSemester, $proYear);
         }
-
+        $proUnitID = $proID = $proDescription = $proSemester = $proYear = $e =  "";
         return $result;
     }
+
+    function get_project_details(&$proUnitID, &$proID, &$proDescription, &$proSemester, &$proYear) {
+        
+        if (empty($_POST['proUnitID'])){ 
+                $errID = 'Please enter a Project Unit ID'; 
+            } or if (empty($_POST['proID'])){ 
+                $errID = 'Please enter a Project ID'; 
+            }
+             else {
+                $proUnitID = test_input($_POST["proUnitID"]);
+                $proID = test_input($_POST["proID"]);
+
+                get_project_details($proUnitID, $proID, $proDescription, $proSemester, $proYear);
+            }
+    }
+
+
 ?>
 
