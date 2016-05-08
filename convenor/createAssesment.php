@@ -1,3 +1,4 @@
+<!-- Page creates and inserts the data of Assesments into the database. Only accessible by convenors. -->
 <?php
     session_start();
     include '../global/ini.php'; 
@@ -94,11 +95,6 @@
                                     <option>Group</option>
                                   </select>
                                 </div>
-
-
-                                    name="ass_Individual" 
-                                    placeholder="Enter isIndividualGroup">
-
                                     <?php echo "<p class='text-danger'>$errIndividual</p>"; ?>
                                 </div>
 
