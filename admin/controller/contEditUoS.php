@@ -14,36 +14,38 @@
     //Validates all of the input from on the current page
     function validate_input(&$id, &$unitName, &$unitDescription) {
     	
-        //Check Unit ID isn't empty
-        if (empty($_POST['unit_ID'])){       
-            $errUnitID = 'Please enter a Unit ID';
+        //Check unit ID isn't empty
+        if (empty($_POST['unit_ID'])) {
+           throw new Exception('Please enter a Unit ID');
         } else {
-            $id = test_input($_POST["unit_ID"]);  
+            $id = test_input($_POST["unit_ID"]);                
         }
         //Check unit name
-        if (empty($_POST['unit_Name'])) {        
-           $errUnitName = 'Please enter a Unit Name';
+        if (empty($_POST['unit_Name'])) {
+            throw new Exception('Place enter a Unit Name');
         } else {
-            $unitName = test_input($_POST["unit_Name"]);               
+            $unitName = test_input($_POST["unit_Name"]);
         }
-        //Check unit description 
-        if (empty($_POST['unit_Description'])) {   
-            $errUnitDescription = 'Place enter a Unit Description';
+
+        //Check unit description
+        if (empty($_POST['unit_Description'])){
+            throw new Exception('Please enter a Description');
         } else {
-            $unitDescription = test_input($_POST["unit_Description"]); 
+            $unitDescription = test_input($_POST["unit_Description"]);
         }
 	}
 
     //Validates the input, then if there are no errors in validation connects to the database and updates the unit.
 	function update_database(&$id, &$unitName, &$unitDescription) {
 		
-		validate_input($id, $unitName, $unitDescription);
+        try {
+            validate_input($id, $unitName, $unitDescription);
+            $result = edit_unit($id, $unitName, $unitDescription);
+            $id = $unitName = $unitDescription = "";
+        } catch (Exception $e) {
+            $result = '<div class="span alert alert-danger fade in">' . $e->getMessage() . '</div>';
+        }
 
-		if (!$errUnitName && !$errUnitDescription){
-                $result = edit_unit($id, $unitName, $unitDescription);
-            }
-
-        $id = $unitName = $unitDescription = $e = "";
         return $result;
     }
 
@@ -51,10 +53,12 @@
     function get_details_from_database(&$id, &$unitName, &$unitDescription) {
         
         if (empty($_POST['unit_ID'])){ 
-                $errID = 'Please enter a Unit ID';
-            } else {
-                $id = test_input($_POST["unit_ID"]);
-                get_unit_details($id, $unitName, $unitDescription);
-            }
+            $result = '<div class="span alert alert-danger fade in">Please enter a Unit ID</div>';
+        } else {
+            $id = test_input($_POST["unit_ID"]);
+            $result = get_unit_details($id, $unitName, $unitDescription);
+        }
+
+        return $result;
     }
 ?>

@@ -28,13 +28,13 @@
                 $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Student successfully registered!</div>';
                 break;
             case 1:
-                $result = '<div class="span alert alert-danger fade in">Student with this ID already exists</div>';
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Student - Student with ID ' . $id .  ' already exists</div>';
                 break;
             case 12899:
-                $result = '<div class="span alert alert-danger fade in">Too many characters in field</div>';
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Student - Too many characters in field</div>';
                 break;
             default:
-                $result = '<div class="span alert alert-danger fade in">Unknown Error Occurred</div>';
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Student - Unknown Error Occurred</div>';
                 debug_to_console( $e[message] );
                 break;
         }
@@ -59,18 +59,20 @@
         oci_execute($stmt);
         oci_commit($conn);
 
+        $e = oci_error($stmt);
+
         switch ($e['code']) {
             case "":
                 $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Student successfully updated!</div>';
                 break;
-            case 1:
-                $result = '<div class="span alert alert-danger fade in">Student with this ID already exists</div>';
-                break;
             case 12899:
-                $result = '<div class="span alert alert-danger fade in">Too many characters in field</div>';
+                $result = '<div class="span alert alert-danger fade in">Failed to Update Student - Too many characters in field</div>';
+                break;
+            case 20001:
+                $result = '<div class="span alert alert-danger fade in">Failed to Update Student - Student ID not Found</div>';
                 break;
             default:
-                $result = '<div class="span alert alert-danger fade in">Unknown Error Occurred</div>';
+                $result = '<div class="span alert alert-danger fade in">Failed to Update Student - Unknown Error Occurred</div>';
                 debug_to_console( $e[message] );
                 break;
         }
@@ -97,22 +99,20 @@
 
         $e = oci_error($stmt);
 
-        //TODO: Actual codes
         switch ($e['code']) {
             case "":
-                $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Student successfully updated!</div>';
+                $result="";
                 break;
-            case 1:
-                $result = '<div class="span alert alert-danger fade in">Student with this ID already exists</div>';
-                break;
-            case 12899:
-                $result = '<div class="span alert alert-danger fade in">Too many characters in field</div>';
+            case 1403:
+                $result = '<div class="span alert alert-danger fade in">Failed to Find Student - Student ID not Found</div>';
                 break;
             default:
-                $result = '<div class="span alert alert-danger fade in">Unknown Error Occurred</div>';
+                $result = '<div class="span alert alert-danger fade in">Failed to Find Student - Unknown Error Occurred</div>';
                 debug_to_console( $e[message] );
                 break;
         }
+
+        return $result;
     }
 
     //Connects to the database and inserts the employee into the Employee and Permissions tables
@@ -139,13 +139,13 @@
                 $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Employee successfully registered!</div>';
                 break;
             case 1:
-                $result = '<div class="span alert alert-danger fade in">Employee with this ID already exists</div>';
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Employee - Employee with username ' . $userName .  ' already exists</div>';
                 break;
             case 12899:
-                $result = '<div class="span alert alert-danger fade in">Too many characters in field</div>';
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Employee - Too many characters in field</div>';
                 break;
             default:
-                $result = '<div class="span alert alert-danger fade in">Unknown Error Occurred</div>';
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Employee - Unknown Error Occurred</div>';
                 debug_to_console( $e[message] );
                 break;
         }
@@ -175,22 +175,23 @@
 
         $e = oci_error($stmt);
 
-        //TODO: Exceptions
         switch ($e['code']) {
             case "":
                 $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Unit successfully registered!</div>';
                 break;
             case 1:
-                $result = '<div class="span alert alert-danger fade in">Unit with this ID already exists</div>';
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Unit - Unit with ID ' . $unitID .  ' already exists</div>';
                 break;
             case 12899:
-                $result = '<div class="span alert alert-danger fade in">Too many characters in field</div>';
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Unit - Too many characters in field</div>';
                 break;
             default:
-                $result = '<div class="span alert alert-danger fade in">Unknown Error Occurred</div>';
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Unit - Unknown Error Occurred</div>';
                 debug_to_console( $e[message] );
                 break;
         }
+
+        return $result;
     }
 
     //Connects to the database and accesses the unit details
@@ -209,22 +210,21 @@
         oci_commit($conn);
 
         $e = oci_error($stmt);
-        //TODO: Exceptions
+
         switch ($e['code']) {
             case "":
-                $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Unit successfully registered!</div>';
+                $result="";
                 break;
-            case 1:
-                $result = '<div class="span alert alert-danger fade in">Unit with this ID already exists</div>';
-                break;
-            case 12899:
-                $result = '<div class="span alert alert-danger fade in">Too many characters in field</div>';
+            case 1403:
+                $result = '<div class="span alert alert-danger fade in">Failed to Find Unit - Unit ID not Found</div>';
                 break;
             default:
-                $result = '<div class="span alert alert-danger fade in">Unknown Error Occurred</div>';
+                $result = '<div class="span alert alert-danger fade in">Failed to Find Unit - Unknown Error Occurred</div>';
                 debug_to_console( $e[message] );
                 break;
         }
+
+        return $result;
     }
 
     //Connects to the database and update the unit in the Unit table
@@ -245,19 +245,18 @@
 
         $e = oci_error($stmt);
 
-        //TODO: Exception Handling
         switch ($e['code']) {
             case "":
-                $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Student successfully updated!</div>';
-                break;
-            case 1:
-                $result = '<div class="span alert alert-danger fade in">Student with this ID already exists</div>';
+                $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Unit successfully updated!</div>';
                 break;
             case 12899:
-                $result = '<div class="span alert alert-danger fade in">Too many characters in field</div>';
+                $result = '<div class="span alert alert-danger fade in">Failed to Update Unit - Too many characters in field</div>';
+                break;
+            case 20001:
+                $result = '<div class="span alert alert-danger fade in">Failed to Update Unit - Unit ID not Found</div>';
                 break;
             default:
-                $result = '<div class="span alert alert-danger fade in">Unknown Error Occurred</div>';
+                $result = '<div class="span alert alert-danger fade in">Failed to Update Unit - Unknown Error Occurred</div>';
                 debug_to_console( $e[message] );
                 break;
         }
@@ -270,6 +269,7 @@
     function insert_unit_offering(&$unitID, &$unitSemester, &$unitYear, &$unitConvenor) {
         $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
 
+        debug_to_console($unitID . $unitSemester . $unitYear . $unitConvenor);
         $sql = 'BEGIN OFFER_UNIT(:unitid, :teachingperiod, :year, :convenor); END;';
         $stmt = oci_parse($conn,$sql);
 
@@ -283,19 +283,24 @@
         oci_commit($conn);
         
         $e = oci_error($stmt);
-        //TODO Exception handling
         switch ($e['code']) {
             case "":
-                $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Student successfully updated!</div>';
+                $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Unit Offering successfully registered!</div>';
                 break;
             case 1:
-                $result = '<div class="span alert alert-danger fade in">Student with this ID already exists</div>';
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Unit Offering - Unit ' . $unitID . ' is already offered in ' . $unitSemester . ' ' . $unitYear . '</div>';
                 break;
             case 12899:
-                $result = '<div class="span alert alert-danger fade in">Too many characters in field</div>';
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Unit Offering - Too many characters in field</div>';
+                break;
+            case 2291:
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Unit Offering - Unit ID not found</div>';
+                break;
+            case 1400:
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Unit Offering - Convenor username not found</div>';
                 break;
             default:
-                $result = '<div class="span alert alert-danger fade in">Unknown Error Occurred</div>';
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Unit Offering - Unknown Error Occurred</div>';
                 debug_to_console( $e[message] );
                 break;
         }

@@ -32,7 +32,7 @@ Create Table UnitOffering (
 	UnitId varchar(10) NOT NULL,
 	TeachingPeriod varchar2(20) NOT NULL,
 	Year number NOT NULL,
-	ConvenorEmpId NOT NULL,
+	ConvenorEmpId number NOT NULL,
 	FOREIGN KEY (ConvenorEmpId) REFERENCES Employee,
 	FOREIGN KEY (UnitId) REFERENCES Unit
 );
@@ -277,6 +277,7 @@ END;
 -- Has no capability to update a student ID
 
 CREATE OR REPLACE PROCEDURE UPDATE_STUDENT (pStuId varchar2, pFirstName varchar2, pLastName varchar2, pEmail varchar2, pContactNo varchar2) AS
+	NO_STU_UPDATED EXCEPTION;
 BEGIN
 	UPDATE Student
 	SET FirstName = pFirstName,
@@ -284,6 +285,13 @@ BEGIN
 		Email = pEmail,
 		ContactNo = pContactNo
 	WHERE StuId = pStuId;
+
+	IF (SQL%ROWCOUNT = 0) THEN
+		RAISE NO_STU_UPDATED;
+	END IF;
+EXCEPTION
+	WHEN NO_STU_UPDATED THEN
+		RAISE_APPLICATION_ERROR(-20001, 'No Students Updated');
 END;
 
 /
@@ -353,6 +361,7 @@ END;
 -- Also gives the assigned convenor convenor priveledges in the system
 
 CREATE OR REPLACE PROCEDURE OFFER_UNIT (pUosId in varchar2, pTeachingPeriod in varchar2, pYear in number, pUsername in varchar2) AS
+
 BEGIN
 	INSERT INTO UnitOffering VALUES
 		(UnitOffIdSeq.NextVal,

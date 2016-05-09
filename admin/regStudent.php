@@ -49,6 +49,8 @@
             <!-- NEW ROW HERE -->
             <div class="row">
                 <div class="col-lg-6">
+                <!-- Output the result of the transaction (success or failure) -->
+                <?php echo $result; ?>
                     <!-- Panel heading -->
                     <div class="panel panel-default">
                         <div class="panel-heading">
@@ -101,16 +103,9 @@
                                 </div>                                          
                                 <!-- Submit Button --> 
                                 <input class="btn btn-lg btn-success btn-block" type="submit" name="submit" value="Register >>">
-
-                                <!-- Output the result of the transaction (success or failure) -->
-                                <div class="form-group">
-                                    <div class="col-sm-10 col-sm-offset-2">
-                                        <?php echo $result; ?>  
-                                    </div>
-                                </div>
                             </fieldset>
                         </form>
-                   </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -17,14 +17,14 @@
 
         //Check Unit ID isn't empty
     	if (empty($_POST['unit_ID'])) {
-           $errID = 'Please enter a Unit ID';
+           throw new Exception('Please enter a Unit ID');
         } else {
             $unitID = test_input($_POST["unit_ID"]);                
         }
 
         //Check Convenor ID isn't empty
         if (empty($_POST['unit_Convenor'])) {
-            $errConvenor = 'Please enter a Unit Convenor';
+            throw new Exception('Please enter a Unit Convenor');
         } else {
             $unitConvenor = test_input($_POST["unit_Convenor"]);
         }
@@ -37,11 +37,11 @@
 
     //Validates the input, then if there are no errors in validation connects to the database and inserts the unit offering.
 	function insert_to_database(&$unitID, &$unitSemester, &$unitYear, &$unitConvenor) {
-		
-		validate_input($unitID, $unitSemester, $unitYear, $unitConvenor);
-
-		if (!$errID && !$errConvenor){
+        try {
+            validate_input($unitID, $unitSemester, $unitYear, $unitConvenor);
             $result = insert_unit_offering($unitID, $unitSemester, $unitYear, $unitConvenor);
+        } catch (Exception $e) {
+            $result = '<div class="span alert alert-danger fade in">' . $e->getMessage() . '</div>';
         }
 
         return $result;

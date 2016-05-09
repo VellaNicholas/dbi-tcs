@@ -171,6 +171,12 @@
                                     data-parsley-type="number">
 
                                     <?php echo "<p class='text-danger'>$errContact</p>"; ?>                                    
+                                </div>
+                                <div class="checkbox">
+                                    <input type="checkbox" name="emp_IsAdmin" placeholder="Enter phone number"
+                                    data-parsley-type="number">
+
+                                    <?php echo "<p class='text-danger'>$errContact</p>"; ?>                                    
                                 </div>                                                           
                                 <div class="text-center">
                                     <input class="btn btn-lg btn-success btn-block" type="submit" name="submit" value="Register >>">

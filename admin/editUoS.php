@@ -24,7 +24,7 @@
 
         //When the find button is pressed, call the database function from the controller layer
         if (isset($_POST["find"])) {
-             get_details_from_database($id, $unitName, $unitDescription);
+             $result = get_details_from_database($id, $unitName, $unitDescription);
         }
 
         //When the submit button is pressed, call the database function from the controller layer
@@ -55,6 +55,8 @@
             <!-- NEW ROW HERE -->
             <div class="row">
                 <div class="col-lg-6">
+                <!-- Output the result of the transaction (success or failure) -->
+                <?php echo $result; ?>  
                     <!-- Initialise form with POST method -->
                     <form role="form" method="post">
                         <fieldset>
@@ -108,12 +110,6 @@
                                     <div class="text-center"> 
                                         <a href="../global/dash.php" class="btn btn-md btn-warning" type="cancel"> Cancel</a>
                                         <input class="btn btn-md btn-success" type="submit" value="Submit" name="submit">
-                                    </div>
-                                    <!-- Output the result of the transaction (success or failure) -->
-                                    <div class="form-group">
-                                        <div class="col-sm-10 col-sm-offset-2">
-                                            <?php echo $result; ?>  
-                                        </div>
                                     </div>
                                 </div>
                         </fieldset>

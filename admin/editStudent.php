@@ -24,7 +24,7 @@
 
         //When the find button is pressed, call the database function from the controller layer
         if (isset($_POST["find"])) {
-             get_details_from_database($id, $firstName, $lastName, $email, $contact);
+            $result = get_details_from_database($id, $firstName, $lastName, $email, $contact);
         }
 
         //When the submit button is pressed, call the database function from the controller layer
@@ -55,6 +55,8 @@
             <!-- NEW ROW HERE -->
             <div class="row">
                 <div class="col-lg-6">
+                <!-- Output the result of the transaction (success or failure) -->
+                <?php echo $result; ?>  
                 <!-- Initialise form with POST method -->
                     <form role="form" method="post">
                         <fieldset>
@@ -80,7 +82,6 @@
                                     <input class="btn btn-md btn-success btn-block" type="submit" name="find" value="Find   Student">
                                 </div>
                             </div>
-
                             <!-- Begin Edit details panel -->
                             <div class="panel panel-default">
                             <!-- Edit student details heading -->
@@ -91,21 +92,21 @@
                                     <p class="help-block">All fields marked with * are mandatory.</p>
                                     <!-- Begin edit student input form controls -->
                                     <div class="form-group">
-                                        <label>First Name</label>
+                                        <label>*First Name</label>
                                         <input class="form-control" 
                                         name="stu_FName" 
                                         placeholder="Edit firstname"
                                         value=<?php echo $firstName ?> >
                                     </div>
                                     <div class="form-group">
-                                        <label>Surname</label>
+                                        <label>*Surname</label>
                                         <input class="form-control" 
                                         name="stu_LName" 
                                         placeholder="Edit surname"
                                         value=<?php echo $lastName ?> >
                                     </div>  
                                     <div class="form-group">
-                                        <label>Email address</label>
+                                        <label>*Email address</label>
                                         <input class="form-control" 
                                         name="stu_Email" 
                                         placeholder="Edit email"
@@ -123,12 +124,6 @@
                                     <div class="text-center"> 
                                         <a href="../global/dash.php" class="btn btn-md btn-warning" type="cancel">Cancel</a>
                                         <input class="btn btn-md btn-success" type="submit" value="Submit" name="submit">
-                                    </div>
-                                    <!-- Output the result of the transaction (success or failure) -->
-                                    <div class="form-group">
-                                        <div class="col-sm-10 col-sm-offset-2">
-                                            <?php echo $result; ?>  
-                                        </div>
                                     </div>
                                 </div>
                         </fieldset>

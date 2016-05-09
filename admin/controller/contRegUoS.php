@@ -15,34 +15,35 @@
     function validate_input(&$unitID, &$unitName, &$unitDescription) {
 
     	//Check unit ID isn't empty
-            if (empty($_POST['unit_ID'])) {
-               $errID = 'Please enter a Unit ID';
-            } else {
-                $unitID = test_input($_POST["unit_ID"]);                
-            }
-            //Check unit name
-            if (empty($_POST['unit_Name'])) {
-                $errName = 'Place enter a Unit Name';
-            } else {
-                $unitName = test_input($_POST["unit_Name"]);
-            }
+        if (empty($_POST['unit_ID'])) {
+           throw new Exception('Please enter a Unit ID');
+        } else {
+            $unitID = test_input($_POST["unit_ID"]);                
+        }
+        //Check unit name
+        if (empty($_POST['unit_Name'])) {
+            throw new Exception('Place enter a Unit Name');
+        } else {
+            $unitName = test_input($_POST["unit_Name"]);
+        }
 
-            //Check unit description
-            if (empty($_POST['unit_Description'])){
-                $errDescription = 'Please enter a Description';
-            } else {
-                $unitDescription = test_input($_POST["unit_Description"]);
-            }
+        //Check unit description
+        if (empty($_POST['unit_Description'])){
+            throw new Exception('Please enter a Description');
+        } else {
+            $unitDescription = test_input($_POST["unit_Description"]);
+        }
 	}
 
     //Validates the input, then if there are no errors in validation connects to the database and inserts the student.
 	function insert_to_database(&$unitID, &$unitName, &$unitDescription) {
-		
-		validate_input($unitID, $unitName, $unitDescription);
 
-		if (!$errID && !$errName && !$errDescription){
-                $result = insert_unit($unitID, $unitName, $unitDescription);
-            }
+        try {
+            validate_input($unitID, $unitName, $unitDescription);
+            $result = insert_unit($unitID, $unitName, $unitDescription);
+        } catch (Exception $e) {
+            $result = '<div class="span alert alert-danger fade in">' . $e->getMessage() . '</div>';
+        }
 
         return $result;
     }
