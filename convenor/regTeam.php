@@ -111,7 +111,7 @@
     ?>
     <!--
     <?php
-        if (! IsAdmin() ) {
+        if (! IsConvenor() ) {
             include '../global/noPermissions/global/permissions.php';
             exit;
         };

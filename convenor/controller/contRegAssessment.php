@@ -1,4 +1,4 @@
-<!-- Controller file is called by Create Assesment file, checks that fields are not empty and calls DataAccess file to commit to database. -->
+<!-- Controller file is called by Create Assessment file, checks that fields are not empty and calls DataAccess file to commit to database. -->
 
 <?php  
 	//Prevents scripting and SQL injection
@@ -18,35 +18,35 @@
                 $ass_ID = test_input($_POST["ass_ID"]);                
             }
             
-            //Check assesment title
+            //Check assessment title
             if (empty($_POST['ass_Title'])) {
                 $errTitle = 'Place enter an Assignment Title';
             } else {
                 $ass_Title = test_input($_POST["ass_Title"]);
             }
             
-            //Check assesment description
+            //Check assessment description
             if (empty($_POST['ass_Description'])){
                 $errDescription = 'Please enter a Project ID';
             } else {
                 $ass_Description = test_input($_POST["ass_Description"]);
             }
             
-            //Check whether assesment is individual or group
+            //Check whether assessment is individual or group
             if (empty($_POST['ass_Individual'])){
                 $errIndividual = 'Is this an Individual or Group Assignment?';
             } else {
                 $ass_Individual = test_input($_POST["ass_Individual"]);
             }
 
-            //Check assesment due date
+            //Check assessment due date
             if (empty($_POST['ass_DueDate'])){
                 $errDueDate = 'Please enter a Due Date';
             } else {
                 $ass_DueDate = test_input($_POST["ass_DueDate"]);
             }
 
-            //Check assesment project ID
+            //Check assessment project ID
             if (empty($_POST['ass_ProjectID'])){
                 $errProjectID = 'Please enter a Project ID';
             } else {

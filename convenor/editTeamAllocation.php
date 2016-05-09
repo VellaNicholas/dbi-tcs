@@ -25,12 +25,12 @@
 
         //When the find button is pressed, call the database function from the controller layer
         if (isset($_POST["find"])) {
-             get_details_from_database($teamAlloSemester, $teamAlloYear, $teamAlloUnitID, $teamAlloTeamID, $teamAlloProID, $teamAlloEmpID));
+             get_details_from_database($teamAlloSemester, $teamAlloYear, $teamAlloUnitID, $teamAlloTeamID, $teamAlloProID, $teamAlloEmpID);
         }
 
         //When the submit button is pressed, call the database function from the controller layer
         if (isset($_POST["submit"])) {
-            $result = update_database($teamAlloSemester, $teamAlloYear, $teamAlloUnitID, $teamAlloTeamID, $teamAlloProID, $teamAlloEmpID));            
+            $result = update_database($teamAlloSemester, $teamAlloYear, $teamAlloUnitID, $teamAlloTeamID, $teamAlloProID, $teamAlloEmpID);            
         }           
     ?>
 

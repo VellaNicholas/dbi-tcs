@@ -58,10 +58,10 @@
                             <a href="#"><i class="fa fa-users fa-fw"></i> Teams<span class="fa arrow"></span></a>
                             <ul class="nav nav-third-level">
                                 <li>
-                                    <a href="regstudent.html"><i class="fa fa-plus fa-fw"></i> Register Team</a>
+                                    <a href="../convenor/regTeam.php"><i class="fa fa-plus fa-fw"></i> Register Team</a>
                                 </li>
                                 <li>
-                                    <a href="editstudent.html"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Team</a>
+                                    <a href="../convenor/editTeam.php"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Team</a>
                                 </li>
                             </ul>
                         </li>';
@@ -69,22 +69,22 @@
                             <a href="#"><i class="fa fa-line-chart fa-fw"></i> Projects<span class="fa arrow"></span></a>
                             <ul class="nav nav-third-level">
                                 <li>
-                                    <!-- OI CHANGE THE REFERENCES -->
-                                    <a href="regemp.html"><i class="fa fa-plus fa-fw"></i>Register Project</a>
+                                    <a href="../convenor/regProject.php"><i class="fa fa-plus fa-fw"></i>Register Project</a>
                                 </li>
                                 <li> 
-                                    <a href="editemp.html"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Project</a>
+                                    <a href="../convenor/editProject.php"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Project</a>
                                 </li>
                             </ul>
                         </li>';
+    // fuck this
     $assessments =  '   <li>
                             <a href="#"><i class="fa fa-file-o fa-fw"></i> Assessments<span class="fa arrow"></span></a>
                             <ul class="nav nav-third-level">
                                 <li>
-                                    <a href="regstudent.html"><i class="fa fa-plus fa-fw"></i> Create Assessment</a>
+                                    <a href="../convenor/regAssessment.php"><i class="fa fa-plus fa-fw"></i> Create Assessment</a>
                                 </li>
                                 <li>
-                                    <a href="editstudent.html"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Assessment</a>
+                                    <a href="../convenor/editAssessment.php"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Assessment</a>
                                 </li>
                             </ul>
                         </li>';
@@ -92,11 +92,10 @@
                             <a href="#"><i class="fa fa-sitemap fa-fw"></i> Team Allocations<span class="fa arrow"></span></a>
                             <ul class="nav nav-third-level">
                                 <li>
-                                    <!-- OI CHANGE THE REFERENCES -->
-                                    <a href="regUoS.html"><i class="fa fa-plus fa-fw"></i> Register Team Allocation</a>
+                                    <a href="../convenor/regTeamAllocation.php"><i class="fa fa-plus fa-fw"></i> Register Team Allocation</a>
                                 </li>
                                 <li>
-                                    <a href="editUoS.html"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Team Allocations</a>
+                                    <a href="../convenor/editTeamAllocation.php"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Team Allocations</a>
                                 </li>
                             </ul>
                         </li>';
