@@ -1,27 +1,27 @@
-<!-- Page creates and inserts the data of Assesments into the database. Only accessible by convenors. -->
+<!-- Page creates and inserts the data of Assessments into the database. Only accessible by convenors. -->
 <?php
     session_start();
     include '../global/ini.php'; 
     include '../global/navigation.php';
     include 'dataAccess.php';
-    include './controller/contCreateAssesment.php';
+    include './controller/contCreateAssessment.php';
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <title>Create an Assesment</title>
+    <title>Create an Assessment</title>
 </head>
 
 <body>
     <?php
         //Initalise variable to null
-        $assesmentID = $title = $description = $isIndividualGroup = $dueDate = $projectID = "";
+        $assessmentID = $title = $description = $isIndividualGroup = $dueDate = $projectID = "";
 
         //When the submit button is pressed, call the database function from the controller layer
         if (isset($_POST["submit"])) {
-            $result = insert_to_database($assesmentID, $title, $description, $isIndividualGroup, $dueDate, $projectID);            
+            $result = insert_to_database($assessmentID, $title, $description, $isIndividualGroup, $dueDate, $projectID);            
         }           
     ?>
     <?php
@@ -39,7 +39,7 @@
             <div class="row">
                 <div class="col-lg-12">
                 <!-- Page Header -->
-                    <h1 class="page-header">Create Assesment</h1>
+                    <h1 class="page-header">Create Assessment</h1>
                 </div>
                 <!-- /.col-lg-12 -->
             </div>
@@ -50,7 +50,7 @@
                 <!-- Panel Heading -->
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            Enter Assesment Details
+                            Enter Assessment Details
                         </div> 
                         <!-- Panel Body -->
                     <div class="panel-body">
@@ -58,16 +58,13 @@
                         <form role="form" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
                             <p class="help-block">All fields marked with * are mandatory.</p>
                             <fieldset>
-                            <!-- Begin create assesment input form controls -->
+                            <!-- Begin create Assessment input form controls -->
                                 <div class="form-group">
-                                    <label>*Assesment ID</label>
+                                    <label>*Assessment ID</label>
                                     <input class="form-control"
                                     name="ass_ID"
-                                    placeholder="Enter Assesment ID">
-
-
-                                    <?php echo "<p class='text-danger'>$errId</p>"; ?>
-                            <?php echo "<p class='text-danger'>$errAssId</p>"; ?>
+                                    placeholder="Enter Assessment ID">
+                                    <?php echo "<p class='text-danger'>$errAssId</p>"; ?>
 
                                 </div>
                                 <div class="form-group">
@@ -131,7 +128,7 @@
                                     </div>
                                     <div class="modal-body">
 
-                                        <p>Assesment successfully added!</p>
+                                        <p>Assessment successfully added!</p>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-success btn-block" data-dismiss="modal">Return to Dashboard
