@@ -60,6 +60,47 @@ Create Table EnrolledStudent (
 
 /
 
+Create Table Team (
+	TeamId number PRIMARY KEY,
+	OfferingId number NOT NULL,
+	SupervisorEmpId number NOT NULL,
+	FOREIGN KEY (OfferingId) REFERENCES UnitOffering,
+	FOREIGN KEY (SupervisorEmpId) REFERENCES Employee
+);
+
+/
+
+Create Table TeamStudentAllocation (
+	TeamId number NOT NULL,
+	EnrolStuId number NOT NULL,
+	PRIMARY KEY (TeamId, EnrolStuId),
+	FOREIGN KEY (TeamId) REFERENCES Team,
+	FOREIGN KEY (EnrolStuId) REFERENCES EnrolledStudent
+);
+
+/
+
+Create Table Project (
+	ProjectId number PRIMARY KEY,
+	OfferingId number NOT NULL,
+	Description varchar2(500) NOT NULL,
+	FOREIGN KEY (OfferingId) REFERENCES UnitOffering
+);
+
+/
+
+Create Table Assessment (
+	AssessmentId number PRIMARY KEY,
+	Title varchar2(100) NOT NULL,
+	Description varchar2(500) NOT NULL,
+	IsIndividualGroup varchar2(10) NOT NULL,
+	MarkingGuide blob NOT NULL,
+	DueDate date NOT NULL,
+	ProjectId number NOT NULL,
+	FOREIGN KEY (ProjectId) REFERENCES Project,
+	CONSTRAINT individual_group CHECK (IsIndividualGroup = 'Individual' OR IsIndividualGroup = 'Group')
+);
+
 -- Permissions and Login Table. Is automatically inserted into when users are created.
 -- Contains their username, hashed password, and booleans representing their permissions.
 -- Oracle Database doesn't have boolean fields, so numbers constrainted to 0 or 1 have been used.
