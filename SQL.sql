@@ -121,19 +121,12 @@ END;
 -- Takes in a username and outputs a boolean representing if the user is required to reset their password
 -- Will return TRUE if the user has never logged in
 
-CREATE OR REPLACE PROCEDURE IS_RESET_REQUIRED (pUsername varchar2, pIsResetRequired out boolean) AS
-	vIsResetRequired number;
+CREATE OR REPLACE PROCEDURE IS_RESET_REQUIRED (pUsername varchar2, pIsResetRequired out number) AS
 BEGIN
 	SELECT IsResetRequired
-		INTO vIsResetRequired
+		INTO pIsResetRequired
 		FROM Permissions
 		WHERE Username = pUsername;
-
-	IF (vIsResetRequired = 1) THEN
-		pIsResetRequired := TRUE;
-	ELSE
-		pIsResetRequired := FALSE;
-	END IF;
 END;
 
 /
@@ -184,23 +177,15 @@ END;
 -- Takes in the Usernamem, current password, and new password.
 -- Will only insert the new password if the old password is entered correctly.
 
-CREATE OR REPLACE PROCEDURE CHANGE_PASSWORD (pUsername varchar2, pOldPassword varchar2, pNewPassword varchar2) AS
-	v_rowid  ROWID;
+CREATE OR REPLACE PROCEDURE RESET_PASSWORD (pUsername varchar2, pNewPassword varchar2) AS
 BEGIN
-	SELECT rowid
-		INTO   v_rowid
-		FROM   Permissions
-		WHERE  Username = pUsername
-		AND    Password = GET_HASH(pUsername, pOldPassword)
-		FOR UPDATE;
-	
 	UPDATE Permissions
 		SET    Password = GET_HASH(pUsername, pNewPassword)
-		WHERE  rowid    = v_rowid;
+		WHERE  Username = pUsername;
 
 	UPDATE Permissions
 		SET    IsResetRequired = 0
-		WHERE  rowid    = v_rowid;
+		WHERE  Username = pUsername;
 END;
 
 /

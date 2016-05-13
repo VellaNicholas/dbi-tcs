@@ -4,16 +4,15 @@ session_start();
 $_SESSION["username"] = "";
 $_SESSION["permissions"] = "";
 
+    function debug_to_console( $data ) {
 
-        function debug_to_console( $data ) {
-
-        if ( is_array( $data ) )
-            $output = "<script>console.log( 'Debug Objects: " . implode( ',', $data) . "' );</script>";
-        else
-            $output = "<script>console.log( 'Debug Objects: " . $data . "' );</script>";
+    if ( is_array( $data ) )
+        $output = "<script>console.log( 'Debug Objects: " . implode( ',', $data) . "' );</script>";
+    else
+        $output = "<script>console.log( 'Debug Objects: " . $data . "' );</script>";
     
-        echo $output;
-        }
+    echo $output;
+    }
 
 ?>
 
@@ -104,19 +103,62 @@ $_SESSION["permissions"] = "";
             $_SESSION["username"] = $username;
             $_SESSION["permissions"] = $permissions;
 
-            debug_to_console("sessions:");
-            debug_to_console($_SESSION["username"]);
-            debug_to_console($_SESSION["permissions"]);
-
-
             if ($permissions > 0) {
-                header("Location: ../global/dash.php");
-                exit();
+                debug_to_console('Permissions good');
+                if (is_reset_required($username) == 1) {
+                    reset_password_modal();
+                    debug_to_console('Session Username: ' . $_SESSION["username"] . ' Password: ' . $newPassword1);
+                } else {
+                  header("Location: ../global/dash.php");
+                  exit();
+                }
             } else {
                 $result='<div class="span alert alert-danger fade in">Invalid Username.</div>';
             }
             
-        }           
+        }
+
+        if (isset($_POST["reset"])) {
+          session_start();
+          debug_to_console("Resetting the Password");
+
+          $resetUsername = test_input($_POST["resetUsername"]);
+          $newPassword1 = test_input($_POST["password1"]);
+          $newPassword2 = test_input($_POST["password2"]);
+
+          try {
+
+            if ($newPassword1 != $newPassword2) {
+              throw new Exception('Passwords must match');
+            } else {
+              debug_to_console('Username: ' . $resetUsername . ' Password: ' . $newPassword1);
+            }
+  
+            $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
+  
+            $sql = 'BEGIN RESET_PASSWORD(:username, :password); END;';
+  
+            $stmt = oci_parse($conn,$sql);
+  
+            //Bind the inputs
+            oci_bind_by_name($stmt, ':username',$resetUsername,32);
+            oci_bind_by_name($stmt, ':password',$newPassword1,32);
+  
+            oci_execute($stmt);
+  
+            $e = oci_error($stmt);
+            echo htmlentities($e['message']);
+            //If oracle codes
+            //if ($e != ""){
+                //echo
+            //} 
+            oci_commit($conn);
+
+          } catch (Exception $ex) {
+            $result = '<div class="span alert alert-danger fade in">' . $ex->getMessage() . '</div>';
+          }
+            
+        }                 
 
         function test_input($data) {
             $data = trim($data);
@@ -124,6 +166,82 @@ $_SESSION["permissions"] = "";
             $data = htmlspecialchars($data);
             return $data;
         }
+
+        function is_reset_required(&$username) {
+            debug_to_console($username);
+            $resetRequired = 0;
+            $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
+            $sql = 'BEGIN IS_RESET_REQUIRED(:username, :reset); END;';
+            $stmt = oci_parse($conn,$sql);
+
+            //Bind the inputs
+            oci_bind_by_name($stmt, ':username',$username,32);
+            oci_bind_by_name($stmt, ':reset',$resetRequired,32);
+            oci_execute($stmt);
+
+            debug_to_console('Reset Required: ' . $resetRequired);
+            return $resetRequired;
+        }
+
+        function reset_password_modal() {
+          debug_to_console('Showing Modal');
+          $resetUsername = test_input($_POST["username"]);
+          debug_to_console('In Modal:' . $resetUsername);
+          echo
+            ' <!-- Modal -->
+              <div id="myModal" class="modal show" role="dialog">
+                <div class="modal-dialog">
+              
+                  <!-- Modal content-->
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal">&times;</button>
+                      <h4 class="modal-title">Reset Password</h4>
+                    </div>
+                    <div class="modal-body">
+                      <p>Because this is your first login, you are required to reset your password. Please do so below.</p>
+                      <p>' . $result . '</p>
+                      <form role="form" method="post" action=" ' .  htmlspecialchars($_SERVER["PHP_SELF"]) . ' ">
+                        <fieldset>
+                            <div class="form-group">
+                                <input class="form-control"
+                                type="hidden"
+                                name="resetUsername"
+                                value="' . $resetUsername . '" 
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label>New Password</label>
+                                <input class="form-control"
+                                name="password1"
+                                placeholder="Enter New Password"
+                                type="password">
+                            </div>
+                            <div class="form-group">
+                                <label>Re Enter New Password</label>
+                                <input class="form-control" 
+                                name="password2" 
+                                placeholder="Re Enter New Password"
+                                type="password">
+                              </div>
+                                                    
+                            <input class="btn btn-lg btn-success btn-block" type="submit"  name="reset" value="Reset >>">
+                      
+                            <div class="form-group">
+                                <div class="col-sm-10 col-sm-offset-2">
+                                    <?php echo $result; ?>  
+                                </div>
+                            </div>
+                      
+                        </fieldset>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>';
+        }
+
+        
 
     ?>
 
