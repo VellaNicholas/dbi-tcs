@@ -15,6 +15,9 @@
                         		<li>
                             		<a href="../admin/editStudent.php"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Student</a>
                         		</li>
+                                <li>
+                                    <a href="../admin/regEnrolment.php"><i class="fa fa-pencil-square-o fa-fw"></i> Enrol Student</a>
+                                </li>
                     		</ul>
                 		</li>';
     $employees =	'	<li>
@@ -54,6 +57,14 @@
                         <a class = "transparent"><i class="fa fa-cubes fa-fw"></i><b> Convenor </b></a>  
                     </li>
                     <ul class="nav nav-second-level">';
+    $convStudents = '   <li>
+                            <a href="#"><i class="fa fa-graduation-cap fa-fw"></i> Students<span class="fa arrow"></span></a>
+                            <ul class="nav nav-third-level">
+                                <li>
+                                    <a href="../admin/regEnrolment.php"><i class="fa fa-pencil-square-o fa-fw"></i> Enrol Student</a>
+                                </li>
+                            </ul>
+                        </li>';
     $teams =        '   <li>
                             <a href="#"><i class="fa fa-users fa-fw"></i> Teams<span class="fa arrow"></span></a>
                             <ul class="nav nav-third-level">
@@ -106,7 +117,7 @@
 
     //CONVENOR VARIABLE: Includes all associated sub-links. Concat all variables and combine them into $convenor
 
-    $convenor = $conHead . $teams . $projects . $assessments . $allocations . $conReports;
+    $convenor = $conHead . $convStudents . $teams . $projects . $assessments . $allocations . $conReports;
 
 
 ?>

@@ -14,36 +14,10 @@
 <html lang="en">
 
 <head>
-    <title>Register Unit Of Study</title>
-
-    <script type='text/javascript'>
-        function addFields(){
-            // Number of inputs to create
-            var number = document.getElementById("team_Member").value;
-            // Container <div> where dynamic content will be placed
-            var container = document.getElementById("container");
-            // Clear previous contents of the container
-            while (container.hasChildNodes()) {
-                container.removeChild(container.lastChild);
-            }
-            if (number > 1 & number <13){ 
-                for (i=0;i<number;i++){
-                    // Append a node with a random text
-                    container.appendChild(document.createTextNode("Student ID " + (i+1)));
-                    // Create an <input> element, set its type and name attributes
-                    var input = document.createElement("input");
-                    input.type = "text";
-                    input.name = "team_Member" + (i+1);
-                    container.appendChild(input);
-                    // Append a line break 
-                    container.appendChild(document.createElement("br"));
-                    }
-            }
-        }
-    </script>
+    <title>Register Team</title>
 </head>
 
-<body>
+<body onload="addFields()">
     <?php
         //error_reporting(E_ALL);
         //ini_set('display_errors', 'On');
@@ -137,7 +111,7 @@
                         <form role="form" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
                             <p class="help-block">All fields marked with * are mandatory.</p>
                             <fieldset>
-                                 <div class="form-group">
+                                <div class="form-group">
                                  <!-- Div for Semester -->
                                   <label for="unit_Semester">Select Semester:</label>
                                   <select class="form-control" id="team_Semester" name="team_Semester">
@@ -149,7 +123,7 @@
                                 </div>
 
                                 <!-- Div for Year -->
-                               <div class="form-group">
+                                <div class="form-group">
                                   <label for="unit_Year">Select Year:</label>
                                   <select class="form-control" id="team_Year
                                   " name="team_Year">
@@ -180,39 +154,28 @@
 
                                 <div class="form-group">
                                     <label>*Team Size </label>
-                                    <input class="form-control"
+                                    <select class="form-control"
+                                    id="team_Size"
                                     name="team_Size"
-                                    placeholder="Enter Team Size">
-
-                                    <!-- <?php echo "<p class='text-danger'>$errID</p>"; ?> Change this -->
-                                </div>
-
-                                <!-- http://stackoverflow.com/questions/11348351/is-it-possible-to-have-a-drop-down-menu-influence-the-returned-value -->
-                                <!--
-                                <div class="form-group">
-                                  <label for="team_Size">Select Team Size:</label>
-                                  <select class="form-control" id="team_size
-                                  " name="team_size">
-                                    <option>2</option>
-                                    <option>3</option>
-                                    <option>4</option>
-                                    <option>5</option>
-                                    <option>6</option>
-                                    <option>7</option>
-                                    <option>8</option>
-                                    <option>9</option>
-                                    <option>10</option>
-                                    <option>11</option>
-                                    <option>12</option>
+                                    onchange="addFields()">
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                        <option value="7">7</option>
+                                        <option value="8">8</option>
+                                        <option value="9">9</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="12">12</option>
                                     </select>
-                                </div>  -->                                                            
-
-                                    <input type="text" id="team_Size" name="team_Size" value="">Number of team members: (2-12 Students)<br />
-                                    <a href="#" id="filldetails" onclick="addFields()">Fill Details</a>
-                                    <div id="container"/>
-                                    
                                 </div>
-
+                            
+                                <div class="form-group">
+                                    <div id="container"/>
+                                    </div>
+                                </div>
 
                                                                                            
                                 <input class="btn btn-lg btn-success btn-block" type="submit" name="submit" value="Register >>">
@@ -250,6 +213,35 @@
     <!-- /#wrapper -->
 
     <?php include '../global/jqueryref.php'; ?>
+    <script type='text/javascript'>
+        function addFields(){
+            // Number of inputs to create
+            var number = document.getElementById("team_Size").value;
+            // Container <div> where dynamic content will be placed
+            var container = document.getElementById("container");
+            // Clear previous contents of the container
+            while (container.hasChildNodes()) {
+                container.removeChild(container.lastChild);
+            }
+            if (number > 1 & number <13){ 
+                for (i=0;i<number;i++){
+                    // Append a node with a random text
+                    var label = document.createElement("label");
+                    label.innerHTML = "Student ID " + (i+1);
+                    container.appendChild(label);
+                    // Create an <input> element, set its type and name attributes
+                    var input = document.createElement("input");
+                    input.className = "form-control";
+                    input.name = "team_Member" + (i+1);
+                    input.id = "team_Member" + (i+1);
+                    input.placeholder = "Enter Student ID";
+                    container.appendChild(input);
+                    // Append a line break 
+                    container.appendChild(document.createElement("br"));
+                    }
+            }
+        }
+    </script>
 </body>
 
 </html>

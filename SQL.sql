@@ -1,4 +1,5 @@
 -- Drop all tables in the database in an order that doesn't violate foreign key constraints
+-- Currently incomplete
 
 DROP TABLE Permissions;
 DROP TABLE EnrolledStudent;
@@ -34,7 +35,8 @@ Create Table UnitOffering (
 	Year number NOT NULL,
 	ConvenorEmpId number NOT NULL,
 	FOREIGN KEY (ConvenorEmpId) REFERENCES Employee,
-	FOREIGN KEY (UnitId) REFERENCES Unit
+	FOREIGN KEY (UnitId) REFERENCES Unit,
+	CONSTRAINT UniqueUnitOffering UNIQUE (UnitId, TeachingPeriod, Year)
 );
 
 /
@@ -55,7 +57,8 @@ Create Table EnrolledStudent (
 	StuId number NOT NULL,
 	OfferingId number NOT NULL,
 	FOREIGN KEY (StuId) REFERENCES Student,
-	FOREIGN KEY (OfferingId) REFERENCES UnitOffering
+	FOREIGN KEY (OfferingId) REFERENCES UnitOffering,
+	CONSTRAINT UniqueEnrolment UNIQUE (StuId, OfferingId)
 );
 
 /
@@ -125,6 +128,8 @@ Create Table Permissions (
 CREATE SEQUENCE StuIdSeq;
 CREATE SEQUENCE EmpIdSeq;
 CREATE SEQUENCE UnitOffIdSeq;
+CREATE SEQUENCE EnrolSeq;
+
 
 /
 
@@ -404,3 +409,45 @@ BEGIN
 		WHERE Username = pUsername;
 END;
 
+
+
+CREATE OR REPLACE PROCEDURE ENROL_STUDENT (pUosId in varchar2, pTeachingPeriod in varchar2, pYear in number, pStuId in varchar2) AS
+	vStuIdCount number;
+	vOffIdCount number;
+	NO_STU_FOUND exception;
+	NO_OFF_FOUND exception;
+BEGIN
+	SELECT COUNT(*) INTO vStuIdCount
+  		FROM Student
+		WHERE StuId = pStuId;
+  	IF vStuIdCount = 0 THEN
+  	  RAISE NO_STU_FOUND;
+  	END IF;
+
+  	SELECT COUNT(*) INTO vOffIdCount
+  		FROM UnitOffering
+		WHERE UnitId = pUoSId
+		AND TeachingPeriod = pTeachingPeriod
+		AND Year = pYear;
+  	IF vOffIdCount = 0 THEN
+  	  RAISE NO_OFF_FOUND;
+  	END IF;
+
+	INSERT INTO EnrolledStudent VALUES
+		(EnrolSeq.NextVal,
+		(SELECT SurStuId
+			FROM Student
+			WHERE StuId = pStuId
+		),
+		(SELECT OfferingId
+			FROM UnitOffering
+			WHERE UnitId = pUoSId
+			AND TeachingPeriod = pTeachingPeriod
+			AND Year = pYear
+		));
+EXCEPTION
+	WHEN NO_STU_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20002, 'No Student Found');
+	WHEN NO_OFF_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20003, 'No Unit Offering Found');
+END;
