@@ -116,21 +116,6 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
             echo $output;
         }
 
-        /*function validate_emp_csv(){
-            $row = 1;
-            if (($handle = fopen("csvInput", "r+")) !== FALSE){
-                while (($data = fgetcsv($handle)) !== FALSE){
-                    $num = count($data);
-                    echo "<p> $num fields in line $row: <br /></p>\n";
-                    $row++;
-                    for ($c=0; $c < $num; $c++) {
-                        echo $data[$c] . "<br />\n";
-                    }
-                }
-            fclose($handle);
-            }
-        }*/
-
     ?>
     <?php
         if (! IsAdmin() ) {
@@ -142,7 +127,7 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
         <div id="page-wrapper">
             <div class="row">
                 <div class="col-lg-12">
-                    <h1 class="page-header">Register Employee v.j</h1>
+                    <h1 class="page-header">Register Employee v.i</h1>
                 </div>
                 <!-- /.col-lg-12 -->
             </div>
@@ -257,7 +242,11 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                         <p id="csvError" class="text-danger"></p>
 
                                         <!-- TO OUTPUT ALL RESULTS OF CSV VALIDATION -->
-                                        <!-- <textarea readonly>HIDE THIS! ONLY USE THIS TO DISPLAY OUTPUT ONCE CSV VALIDATION IS DONE YO</textarea> -->
+                                        <!-- Spawns a hidden table -->
+                                        <div class="outputArea">
+                                            <p id="output" class="output">
+                                            </p>
+                                        </div>
 
                                         <!-- NEW TECH! YAY! 
                                         Maybe clear the fileInput control when the CANCEL button is pressed? Are there any repercussions? Do it later.
@@ -272,13 +261,14 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                             //When the user selects a file, look for the btn that contains the index = 3 (upload) and the button that contains the index = 1 (remove).
                                             $(document).ready(function() {
                                                 document.getElementById("csvInput").addEventListener('change', function(){
+                                                    //Clear any old data from output area
+                                                    document.getElementById("output").innerHTML = "";
                                                     //The file input upload button is index = 3 of all btn classes on page. The remove button is index = 1. Refer to these buttons as i=3 and i=1 respectively. Again, no way to make this simpler. Research this further.
                                                     var removeBtn = document.getElementsByClassName("btn")[1];
                                                     var uploadBtn = document.getElementsByClassName("btn")[3];
     
                                                     //When the upload button is clicked, get the filename/filepath
                                                     uploadBtn.addEventListener("click", function(){
-    
                                                         var file = document.getElementById("csvInput").files[0];
                                                         console.log(file);
     
@@ -294,6 +284,10 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                     removeBtn.addEventListener("click", function(){
                                                         //Clear the error messages on cancel.
                                                         document.getElementById("csvError").innerHTML = "";
+                                                        //Clear the output textarea of old data
+                                                        document.getElementById("output").innerHTML = "";
+                                                        //Hide the output textarea on cancel.
+                                                        //document.getElementById("outputTable").style.display = "none";
                                                     });
                                                 });
                                             });
@@ -332,6 +326,7 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                             function isEmpty(str) {
                                                 return typeof str == 'string' && !str.trim() || typeof str == 'undefined' || str === null;
                                             }
+
                                             function isNumeric(n) {
                                                 return !isNaN(parseFloat(n)) && isFinite(n);
                                             }     
@@ -437,31 +432,13 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                         default:
                                                             break;
                                                     }
-
-                                                    /*if (field == 0){
-                                                        //Run the validateName function
-                                                        var usernameInput = validateName(data[row][field]);
-                                                        //If the validate function returns a string, output the error.
-                                                        if (usernameInput == false){
-                                                            switch(usernameInput["type"]){
-                                                                case "missingField":
-                                                                return {type:usernameInput["type"], validated:false, row:row};
-                                                                break;
-                                                            }
-                                                            break;
-                                                        //Else, the validation was successful (validation function should return a bool)
-                                                        } else {
-                                                            //Just for debugging CHANGE LATER
-                                                            output = "username successfully validated on row " + row;
-                                                            console.log(output);
-                                                            return {type:"success", validated:true, row:row};
-                                                        }
-                                                    }*/
                                                 }
-                                                return {validated:true, type:"success", row:row};
+                                                //Returns the successful row and all of its fields to be sent to the server
+                                                return {validated:true, type:"success", row:row, username:data[row][0], firstName: data[row][1], lastName: data[row][2], email: data[row][3], contact: data[row][4]};
                                             }
 
                                             function outputResults(rows, type, field){
+                                                var outputArea = document.getElementById("output");
                                                 if (rows.length == 0){
                                                     return "";
                                                 } else {
@@ -469,26 +446,48 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                     var message = "";
                                                     switch (type){
                                                         case "missingField":
-                                                            message = "No " + field + " found on";
+                                                            message = "<p class='bg-danger'>No " + field + " found on";
                                                             break;
                                                         case "maxChars":
-                                                            message = field + " has exceeded maximum characters on";
+                                                            message = "<p class='bg-danger'>" + field + " has exceeded maximum characters on";
                                                             break;
                                                         case "invalidFormat":
-                                                            message = "Email is incorrectly formatted on";
+                                                            message = "<p class='bg-danger'>Email is incorrectly formatted on";
                                                             break;
                                                         case "notNumber":
-                                                            message = field + " is not numeric on";
+                                                            message = "<p class='bg-danger'>" + field + " is not numeric on";
+                                                            break;
+                                                        case "databaseFail":
+                                                            message = "<p class='bg-danger'> Employee already exists on";
                                                             break;
                                                         case "success":
-                                                            message = "Successfully added";
+                                                            message = "<p class='bg-success'>Successfully added";
                                                             break;
                                                     }
-                                                    console.log(message + " rows: (" + rowsOutput + ")");
+                                                    //textOut.innerHTML = textOut.innerHTML + message + " rows: (" + rowsOutput + ") " + "&#13;&#10;";outputArea
+
+                                                    outputArea.innerHTML = outputArea.innerHTML + message + " rows: (" + rowsOutput + ") </p>";
                                                 }
                                             }
 
-                                            
+                                            function sendToServer(){
+                                                var validate_input = function(username, firstname, surname, email, contact) {
+                                                    var xhttp = new XMLHttpRequest();
+                                                    xhttp.onreadystatechange = function() {
+                                                        if (xhttp.readyState == 4 && xhttp.status == 200){
+                                                           $.ajax({
+                                                            url: './controller/empAjaxValidation.php',
+                                                            type: 'POST',
+                                                            data: {username:username, firstname:firstname, surname:surname, email:email, contact:contact},
+                                                            success: function(data) {
+                                                                console.log('AJAX OUTPUT: ' + data); // Inspect this in your console
+                                                            }
+                                                            }); 
+                                                        }
+                                                    }
+                                                    
+                                                };
+                                            }
                                             //Main validation method. Loads data, then validates it.
                                             function loadValidCSV(csvFile){
                                                 if (isCSV(csvFile.name)) {
@@ -502,8 +501,9 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                         var data = $.csv.toArrays(csv);
 
                                                         //Declare arrays for all possible output messages. THis will store the affected rows.
-                                                        //Successful rows
-                                                        var addedRows = [];
+                                                        //Initially, rows that pass front end validation, but not backend or serverside.
+                                                        //Will be cleaned later when compared with the rows that failed DB validation.
+                                                        var successfulRow = [];
 
                                                         //Username errors
                                                         var noUsernameErrRows = [];
@@ -524,6 +524,9 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                         //Contact number errors
                                                         var contactNotNumeric = [];
                                                         var contactMaxChars = [];
+
+                                                        //Unique errors
+                                                        var databaseFailedRows = [];
 
 
                                                         //For every row, 
@@ -581,33 +584,84 @@ from the source. Remember to add this to the jqueryref.php file, or alternativel
                                                                                 break;
                                                                         }
                                                                 }
-
                                                             } else {
                                                                 //Add row
-                                                                addedRows.push(Number(activeRow["row"]) + 1);
+                                                                var req = $.ajax({
+                                                                  method: "POST",
+                                                                  url: "./controller/empAjaxValidation.php",
+                                                                  data: { username: activeRow["username"], firstName:activeRow["firstName"], lastName:activeRow["lastName"], email:activeRow["email"], contact:activeRow["contact"], row:Number(activeRow["row"]) + 1}
+                                                                })
+                                                                  .done(function( msg ) {
+                                                                    if (msg != "") {
+                                                                        databaseFailedRows.push(msg);
+                                                                    }
+                                                                    //3
+                                                                    
+
+                                                                  });
+
+                                                                successfulRow.push(Number(activeRow["row"]) + 1);
+
+
+                                      
                                                             }
                                                         }
+                                                        //2
+                                                        $.when(req)
+                                                            //NEW PROBLEM
+                                                            // Will check these fine, but when a new row is added to the DB, this seems to 
+                                                            //run again. Means that it will throw a unique id exception cause the row JUST
+                                                            //added to the DB.
 
-                                                        outputResults(addedRows, "success", "");
+                                                            //SOLUTION: $(document).ajaxStop(function () {
+                                                            // 0 === $.active});
 
-                                                        //Ouput all missing fields first
-                                                        outputResults(noUsernameErrRows, "missingField", "Username");
-                                                        outputResults(noFnameErrRows, "missingField", "Firstname");
-                                                        outputResults(noSnameErrRows, "missingField", "Surname");
-                                                        outputResults(noEmailErrRows, "missingField", "Email");
+                                                            .done(function() {
+                                                                
+                                                                console.log('In Ajax Section' + databaseFailedRows);
+                                                                successfulRow.sort(function(a, b){return a-b});
+                                                                databaseFailedRows.sort(function(a, b){return a-b});
 
-                                                        //Output max characters
-                                                        outputResults(userMaxChars, "maxChars", "Username");
-                                                        outputResults(fnameMaxChars, "maxChars", "Firstname");
-                                                        outputResults(snameMaxChars, "maxChars", "Surname");
-                                                        outputResults(contactMaxChars, "maxChars", "Contact");
 
-                                                        //Output bad email format
-                                                        outputResults(badEmailFormat, "invalidFormat", "Email");
+                                                                for (var i = 0; i < databaseFailedRows.length; i++) {
+                                                                    for (var j = 0; j < successfulRow.length; j++) {
+                                                                        if (databaseFailedRows[i] == successfulRow[j]){
+                                                                            successfulRow = successfulRow.slice(0, j).concat(successfulRow.slice(j+1, successfulRow.length));
+                                                                        }
+                                                                    }
+                                                                }
 
-                                                        //Ouput not numeric
-                                                        outputResults(contactNotNumeric, "notNumber", "Contact");
+                                                                //Clear the output box of old data...
+                                                                document.getElementById("output").innerHTML = "";
 
+
+                                                                outputResults(successfulRow, "success", "");
+        
+                                                                //Output already in database
+                                                                outputResults(databaseFailedRows, "databaseFail", "");
+        
+                                                                //Ouput all missing fields first
+                                                                outputResults(noUsernameErrRows, "missingField", "Username");
+                                                                outputResults(noFnameErrRows, "missingField", "Firstname");
+                                                                outputResults(noSnameErrRows, "missingField", "Surname");
+                                                                outputResults(noEmailErrRows, "missingField", "Email");
+                                                                
+                                                                //Output max characters
+                                                                outputResults(userMaxChars, "maxChars", "Username");
+                                                                outputResults(fnameMaxChars, "maxChars", "Firstname");
+                                                                outputResults(snameMaxChars, "maxChars", "Surname");
+                                                                outputResults(contactMaxChars, "maxChars", "Contact");
+                                                                
+        
+                                                                //Output bad email format
+                                                                outputResults(badEmailFormat, "invalidFormat", "Email");
+        
+                                                                //Ouput not numeric
+                                                                outputResults(contactNotNumeric, "notNumber", "Contact");
+                                                            })
+                                                        
+
+                                                        //end WEN
 
                                                     }
                                                     return true;
