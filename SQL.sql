@@ -65,6 +65,7 @@ Create Table EnrolledStudent (
 
 Create Table Team (
 	TeamId number PRIMARY KEY,
+	UserTeamId varchar2(100) NOT NULL,
 	OfferingId number NOT NULL,
 	SupervisorEmpId number NOT NULL,
 	FOREIGN KEY (OfferingId) REFERENCES UnitOffering,
@@ -75,7 +76,7 @@ Create Table Team (
 
 Create Table TeamStudentAllocation (
 	TeamId number NOT NULL,
-	EnrolStuId number NOT NULL,
+	EnrolStuId number NOT NULL UNIQUE,
 	PRIMARY KEY (TeamId, EnrolStuId),
 	FOREIGN KEY (TeamId) REFERENCES Team,
 	FOREIGN KEY (EnrolStuId) REFERENCES EnrolledStudent
@@ -85,9 +86,12 @@ Create Table TeamStudentAllocation (
 
 Create Table Project (
 	ProjectId number PRIMARY KEY,
+	ProjectName varchar2(100) NOT NULL,
 	OfferingId number NOT NULL,
-	Description varchar2(500) NOT NULL,
-	FOREIGN KEY (OfferingId) REFERENCES UnitOffering
+	Description varchar2(200) NOT NULL,
+	FOREIGN KEY (OfferingId) REFERENCES UnitOffering,
+	CONSTRAINT UniqueProject UNIQUE (ProjectName, OfferingId)
+
 );
 
 /
@@ -97,7 +101,7 @@ Create Table Assessment (
 	Title varchar2(100) NOT NULL,
 	Description varchar2(500) NOT NULL,
 	IsIndividualGroup varchar2(10) NOT NULL,
-	MarkingGuide blob NOT NULL,
+	MarkingGuide varchar2(200) NOT NULL,
 	DueDate date NOT NULL,
 	ProjectId number NOT NULL,
 	FOREIGN KEY (ProjectId) REFERENCES Project,
@@ -129,6 +133,8 @@ CREATE SEQUENCE StuIdSeq;
 CREATE SEQUENCE EmpIdSeq;
 CREATE SEQUENCE UnitOffIdSeq;
 CREATE SEQUENCE EnrolSeq;
+CREATE SEQUENCE TeamSeq;
+CREATE SEQUENCE ProjIdSeq;
 
 
 /
@@ -409,7 +415,7 @@ BEGIN
 		WHERE Username = pUsername;
 END;
 
-
+/
 
 CREATE OR REPLACE PROCEDURE ENROL_STUDENT (pUosId in varchar2, pTeachingPeriod in varchar2, pYear in number, pStuId in varchar2) AS
 	vStuIdCount number;
@@ -451,3 +457,107 @@ EXCEPTION
 	WHEN NO_OFF_FOUND THEN
 		RAISE_APPLICATION_ERROR(-20003, 'No Unit Offering Found');
 END;
+
+/
+
+CREATE OR REPLACE PACKAGE INSERT_TEAM_PKG AS
+	TYPE TeamMemberArray is TABLE of varchar2(20) INDEX by pls_integer;
+	PROCEDURE INSERT_TEAM(pUosId in varchar2, pTeachingPeriod in varchar2, pYear in number, pUserTeamId in number, pTeamMembers in TeamMemberArray, pSupervisor in varchar2);
+END INSERT_TEAM_PKG;
+
+CREATE OR REPLACE PACKAGE BODY INSERT_TEAM_PKG AS
+	PROCEDURE INSERT_TEAM (pUosId in varchar2, pTeachingPeriod in varchar2, pYear in number, pUserTeamId in number, pTeamMembers in TeamMemberArray, pSupervisor in varchar2) IS
+		vTeamId number;
+		vOffIdCount number;
+		vSupCount number;
+		NO_OFF_FOUND exception;
+		NO_SUP_FOUND exception;
+	BEGIN
+	  	SELECT COUNT(*) INTO vOffIdCount
+	  		FROM UnitOffering
+			WHERE UnitId = pUoSId
+			AND TeachingPeriod = pTeachingPeriod
+			AND Year = pYear;
+	  	IF vOffIdCount = 0 THEN
+	  	  RAISE NO_OFF_FOUND;
+	  	END IF;
+
+	  	SELECT COUNT(*) INTO vSupCount
+	  		FROM Employee
+			WHERE Username = pSupervisor;
+	  	IF vSupCount = 0 THEN
+	  	  RAISE NO_SUP_FOUND;
+	  	END IF;
+	
+	  	vTeamId := TeamSeq.NextVal;
+	
+		INSERT INTO Team VALUES
+			(vTeamId,
+			(SELECT OfferingId
+				FROM UnitOffering
+				WHERE UnitId = pUoSId
+				AND TeachingPeriod = pTeachingPeriod
+				AND Year = pYear
+			),
+			(SELECT EmpId
+				FROM Employee
+				WHERE Username = pSupervisor
+			),
+			pUserTeamId);
+	
+		FOR i IN 1..pTeamMembers.count LOOP
+			INSERT INTO TeamStudentAllocation VALUES
+				(vTeamId,
+				(SELECT EnrolStuId FROM EnrolledStudent e
+					INNER JOIN UnitOffering u
+	        		ON e.OfferingId = u.OfferingId
+	        		INNER JOIN Student s
+	        		ON e.StuId = s.SurStuId
+					WHERE pTeamMembers(i) = s.StuId
+	        		AND pUosId = u.UnitId
+					AND pTeachingPeriod = u.TeachingPeriod
+					AND pYear = u.Year
+				));
+		END LOOP;
+		
+	EXCEPTION
+		WHEN NO_OFF_FOUND THEN
+			RAISE_APPLICATION_ERROR(-20003, 'No Unit Offering Found');
+		WHEN NO_SUP_FOUND THEN
+			RAISE_APPLICATION_ERROR(-20004, 'No Supervisor Found');
+	END INSERT_TEAM;
+END INSERT_TEAM_PKG;
+
+/
+
+CREATE OR REPLACE PROCEDURE INSERT_PROJECT (pUosId in varchar2, pProjectName in varchar2, pTeachingPeriod in varchar2, pYear in number, pDescription in varchar2) AS
+vOffIdCount number;
+NO_OFF_FOUND exception;
+BEGIN
+	SELECT COUNT(*) INTO vOffIdCount
+	  	FROM UnitOffering
+		WHERE UnitId = pUoSId
+		AND TeachingPeriod = pTeachingPeriod
+		AND Year = pYear;
+	IF vOffIdCount = 0 THEN
+	  RAISE NO_OFF_FOUND;
+	END IF;
+
+	INSERT INTO Project (ProjectId, ProjectName, OfferingId, Description) VALUES
+		(ProjIdSeq.NextVal,
+		pProjectName,
+		(SELECT OfferingId
+			FROM UnitOffering
+			WHERE UnitId = pUoSId
+			AND TeachingPeriod = pTeachingPeriod
+			AND Year = pYear),
+		pDescription
+		);
+EXCEPTION
+	WHEN NO_OFF_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20003, 'No Unit Offering Found');
+END;
+
+/
+
+
