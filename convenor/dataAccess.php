@@ -38,16 +38,100 @@
         return $result;
     }
 
+    function insert_assessment(&$assTitle, &$unitID, &$semester, &$year, &$description, &$isIndividualGroup, &$dueDate, &$markingGuidePath, &$proName) {
+        $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
+        $sql = 'BEGIN INSERT_ASSESSMENT(:title, :unitid, :semester, :year, :description, :individualgroup, :duedate, :markingguide, :proname); END;';
+
+        $stmt = oci_parse($conn,$sql);
+        //Bind the inputs
+        oci_bind_by_name($stmt, ':title', $assTitle);
+        oci_bind_by_name($stmt, ':unitid', $unitID);
+        oci_bind_by_name($stmt, ':semester', $semester);
+        oci_bind_by_name($stmt, ':year', $year);
+        oci_bind_by_name($stmt, ':description', $description);
+        oci_bind_by_name($stmt, ':individualgroup', $isIndividualGroup);
+        oci_bind_by_name($stmt, ':duedate', $dueDate);
+        oci_bind_by_name($stmt, ':markingguide', $markingGuidePath);
+        oci_bind_by_name($stmt, ':proname', $proName);
+
+        oci_execute($stmt);
+        oci_commit($conn);
+
+        $e = oci_error($stmt);
+        switch ($e['code']) {
+            case "":
+                $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Assessment successfully registered!</div>';
+                break;
+            case 1:
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Assessment - Project ' . $proName . ' already has an assignment called ' . $assTitle . '</div>';
+                break;
+            case 12899:
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Assessment - Too many characters in field</div>';
+                break;
+            case 20003:
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Assessment - ' . $unitID . ' not offered in ' . $semester . ' ' . $year . '</div>';
+                break;
+            case 20005:
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Assessment - No Project called ' . $proName . ' for ' . $unitID . ' in ' . $semester . ' ' . $year . '</div>';
+                break;
+            default:
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Enrolment - Unknown Error Occurred</div>';
+                debug_to_console( $e[message] );
+                break;
+        }
+
+        return $result;
+    }
+
+    function allocate_project(&$proName, &$teamID, &$semester, &$year, &$unitID) {
+        $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
+        $sql = 'BEGIN ALLOCATE_PROJECT(:proname, :teamid, :unitid, :semester, :year); END;';
+        
+        $stmt = oci_parse($conn,$sql);
+        //Bind the inputs
+        oci_bind_by_name($stmt, ':proname', $proName);
+        oci_bind_by_name($stmt, ':teamid', $teamID);
+        oci_bind_by_name($stmt, ':unitid', $unitID);
+        oci_bind_by_name($stmt, ':semester', $semester);
+        oci_bind_by_name($stmt, ':year', $year);
+
+        oci_execute($stmt);
+        oci_commit($conn);
+
+        $e = oci_error($stmt);
+        switch ($e['code']) {
+            case "":
+                $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Assessment successfully registered!</div>';
+                break;
+            case 1:
+                $result = '<div class="span alert alert-danger fade in">Failed to Allocate Project - Project ' . $proName . ' has already been allocated to Team ' . $teamID . '</div>';
+                break;
+            case 12899:
+                $result = '<div class="span alert alert-danger fade in">Failed to Allocate Project - Too many characters in field</div>';
+                break;
+            case 20003:
+                $result = '<div class="span alert alert-danger fade in">Failed to Allocate Project - ' . $unitID . ' not offered in ' . $semester . ' ' . $year . '</div>';
+                break;
+            case 20005:
+                $result = '<div class="span alert alert-danger fade in">Failed to Allocate Project - No Project called ' . $proName . ' for ' . $unitID . ' in ' . $semester . ' ' . $year . '</div>';
+                break;
+            case 20006:
+                $result = '<div class="span alert alert-danger fade in">Failed to Allocate Project - No Team with Team ID ' . $teamID . ' for ' . $unitID . ' in ' . $semester . ' ' . $year . '</div>';
+                break;
+            default:
+                $result = '<div class="span alert alert-danger fade in">Failed to Allocate Project - Unknown Error Occurred</div>';
+                debug_to_console( $e[message] );
+                break;
+        }
+
+        return $result;
+    }
+
     function insert_team(&$unitID, &$unitYear, &$unitSemester, &$teamID, &$team_member, &$teamSupervisor) {
         $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
         $sql = 'BEGIN INSERT_TEAM_PKG.INSERT_TEAM(:unitid, :unitsemester, :unityear, :teamid, :teammembers, :supervisor); END;';
 
         $stmt = oci_parse($conn,$sql);
-
-        print_r($team_member);
-        debug_to_console($unitID . $unitYear . $unitSemester . $teamID . $team_member . $teamSupervisor);
-
-
         //Bind the inputs
         oci_bind_by_name($stmt, ':teamid', $teamID);
         oci_bind_by_name($stmt, ':unitid', $unitID);

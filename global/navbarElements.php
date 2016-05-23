@@ -16,7 +16,7 @@
                             		<a href="../admin/editStudent.php"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Student</a>
                         		</li>
                                 <li>
-                                    <a href="../admin/regEnrolment.php"><i class="fa fa-pencil-square-o fa-fw"></i> Enrol Student</a>
+                                    <a href="../admin/regEnrolment.php"><i class="fa fa-folder-open fa-fw"></i> Enrol Student</a>
                                 </li>
                     		</ul>
                 		</li>';
@@ -41,7 +41,7 @@
                         			<a href="../admin/editUoS.php"><i class="fa fa-pencil-square-o fa-fw"></i> Edit UoS</a>
                     			</li>
                                 <li>
-                                    <a href="../admin/regUnitOffering.php"><i class="fa fa-plus fa-fw"></i> Offer UoS</a>
+                                    <a href="../admin/regUnitOffering.php"><i class="fa fa-folder-open fa-fw"></i> Offer UoS</a>
                                 </li>
                 			</ul>
             			</li>';
@@ -100,13 +100,13 @@
                             </ul>
                         </li>';
     $allocations =  '   <li>
-                            <a href="#"><i class="fa fa-sitemap fa-fw"></i> Team Allocations<span class="fa arrow"></span></a>
+                            <a href="#"><i class="fa fa-sitemap fa-fw"></i> Project Allocations<span class="fa arrow"></span></a>
                             <ul class="nav nav-third-level">
                                 <li>
-                                    <a href="../convenor/regTeamAllocation.php"><i class="fa fa-plus fa-fw"></i> Register Team Allocation</a>
+                                    <a href="../convenor/regTeamAllocation.php"><i class="fa fa-plus fa-fw"></i> Allocate Project to Team</a>
                                 </li>
                                 <li>
-                                    <a href="../convenor/editTeamAllocation.php"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Team Allocations</a>
+                                    <a href="../convenor/editTeamAllocation.php"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Allocation of Project to Team</a>
                                 </li>
                             </ul>
                         </li>';

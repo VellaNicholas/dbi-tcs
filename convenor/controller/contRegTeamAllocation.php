@@ -7,56 +7,41 @@
         return $data;
     }
 
-    function validate_input(&$teamAlloSemester, &$teamAlloYear, &$teamAlloUnitID, &$teamAlloTeamID, &$teamAlloProID, &$teamAlloEmpID) {
+    function validate_input(&$proName, &$teamID, &$semester, &$year, &$unitID) {
 
-          
-    	    
-           //Check team allocation semester
-            if (empty($_POST['teamAlloSemester'])) {
-               $errTeamAlloSemester = 'Please enter a Team Allocation Semester';
-            } else {
-                $teamAlloSemester = test_input($_POST["teamAlloSemester"]);                
-            }
+        //Check Assignment Title isn't empty
+        if (empty($_POST['pro_name'])){
+            throw new Exception('Project Name required');
+        } else {
+            $proName = test_input($_POST["pro_name"]);
+        }
 
-            //Check ID
-            if (empty($_POST['teamAlloYear'])) {
-               $errTeamAlloYear = 'Please enter a Team Unit';
-            } else {
-                $teamAlloYear = test_input($_POST["teamAlloYear"]);
-            }
+        //Check Team ID
+        if (empty($_POST['team_ID'])) {
+           throw new Exception('Team ID required');
+        } else {
+            $teamID = test_input($_POST["team_ID"]);                
+        }
 
-            if (empty($_POST['teamAlloUnitID'])) {
-               $errTeamAlloUnitID = 'Please enter a Team Allocation Unit ID';
-            } else {
-                $teamAlloUnitID = test_input($_POST["teamAlloUnitID"]);
-            }
+        //Check unit ID name
+        if (empty($_POST['unit_ID'])) {
+           throw new Exception('Unit ID required');
+        } else {
+            $unitID = test_input($_POST["unit_ID"]);                
+        }
 
-            if (empty($_POST['teamAlloTeamID'])) {
-               $errTeamAlloTeamID = 'Please enter a Team Allocation Team ID';
-            } else {
-                $teamAlloTeamID = test_input($_POST["teamAlloTeamID"]);
-            }
+        $semester = test_input($_POST["teaching_period"]);
+        $year = test_input($_POST["year"]);
+    }
 
-            if (empty($_POST['teamAlloProID'])) {
-               $errTeamAlloProID = 'Please enter a Project ID for the Allocated team';
-            } else {
-                $teamAlloProID = test_input($_POST["teamAlloProID"]);
-            }
-
-            if (empty($_POST['teamAlloEmpID'])) {
-               $errTeamAlloEmpID = 'Please enter a Employee ID for the team';
-            } else {
-                $teamAlloEmpID = test_input($_POST["teamAlloEmpID"]);
-            }
-	}
-
-	function insert_to_database(&$teamAlloSemester, &$teamAlloYear, &$teamAlloUnitID, &$teamAlloTeamID, &$teamAlloProID, &$teamAlloEmpID) {
-		
-		validate_input($teamAlloSemester, $teamAlloYear, $teamAlloUnitID, $teamAlloTeamID, $teamAlloProID, $teamAlloEmpID);
-        //The ones below here are the errors don't forget to change them cunt
-		if (!$errTeamAlloSemester && !$errTeamAlloYear && !$errTeamAlloUnitID && !$errTeamAlloTeamID && !$errTeamAlloProID && !$errTeamAlloEmpID){
-
-            $result = insert_team_allocation($teamAlloSemester, $teamAlloYear, $teamAlloUnitID, $teamAlloTeamID, $teamAlloProID, $teamAlloEmpID);
+    //Function inserts the data, into the database, validates the input and checks there are no errors. 
+    function insert_to_database(&$proName, &$teamID, &$semester, &$year, &$unitID) {
+        
+        try {
+            validate_input($proName, $teamID, $semester, $year, $unitID);
+            $result = allocate_project($proName, $teamID, $semester, $year, $unitID);
+        } catch (Exception $e) {
+            $result = '<div class="span alert alert-danger fade in">' . $e->getMessage() . '</div>';
         }
 
         return $result;

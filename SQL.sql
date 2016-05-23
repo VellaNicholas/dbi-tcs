@@ -102,10 +102,19 @@ Create Table Assessment (
 	Description varchar2(500) NOT NULL,
 	IsIndividualGroup varchar2(10) NOT NULL,
 	MarkingGuide varchar2(200) NOT NULL,
-	DueDate date NOT NULL,
+	DueDate varchar2(50) NOT NULL,
 	ProjectId number NOT NULL,
 	FOREIGN KEY (ProjectId) REFERENCES Project,
-	CONSTRAINT individual_group CHECK (IsIndividualGroup = 'Individual' OR IsIndividualGroup = 'Group')
+	CONSTRAINT individual_group CHECK (IsIndividualGroup = 'Individual' OR IsIndividualGroup = 'Group'),
+	CONSTRAINT UniqAssessment UNIQUE (Title, ProjectId)
+);
+
+Create Table ProjectAllocation (
+	TeamId number,
+	ProjectId number,
+	FOREIGN KEY (TeamId) REFERENCES Team,
+	FOREIGN KEY (ProjectId) REFERENCES Project,
+	CONSTRAINT UniqueProjectAlloation UNIQUE (TeamId, ProjectId)
 );
 
 -- Permissions and Login Table. Is automatically inserted into when users are created.
@@ -135,6 +144,7 @@ CREATE SEQUENCE UnitOffIdSeq;
 CREATE SEQUENCE EnrolSeq;
 CREATE SEQUENCE TeamSeq;
 CREATE SEQUENCE ProjIdSeq;
+CREATE SEQUENCE AssIdSeq;
 
 
 /
@@ -561,3 +571,121 @@ END;
 /
 
 
+CREATE OR REPLACE PROCEDURE INSERT_ASSESSMENT(pTitle in varchar2, pUoSId in varchar2, pTeachingPeriod in varchar2, pYear in number,
+	pDescription in varchar2, pIndividualGroup in varchar2, pDueDate in varchar2, pMarkingGuidePath in varchar2, pProName in varchar2) AS 
+vOffIdCount number;
+vProjCount number;
+NO_OFF_FOUND exception;
+NO_PROJ_FOUND exception;
+BEGIN
+	SELECT COUNT(*) INTO vOffIdCount
+	  	FROM UnitOffering
+		WHERE UnitId = pUoSId
+		AND TeachingPeriod = pTeachingPeriod
+		AND Year = pYear;
+	IF vOffIdCount = 0 THEN
+	  RAISE NO_OFF_FOUND;
+	END IF;
+
+	SELECT COUNT(*) INTO vProjCount
+		FROM Project p
+		INNER JOIN UnitOffering u
+		ON p.OfferingId = u.OfferingId
+		WHERE u.UnitId = pUoSId
+		AND u.TeachingPeriod = pTeachingPeriod
+		AND u.Year = pYear
+		AND p.ProjectName = pProName;
+	IF vProjCount = 0 THEN
+	  RAISE NO_PROJ_FOUND;
+	END IF;
+
+	INSERT INTO Assessment VALUES
+		(AssIdSeq.NextVal,
+		pTitle,
+		pDescription,
+		pIndividualGroup,
+		pMarkingGuidePath,
+		pDueDate,
+		(SELECT ProjectId
+			FROM Project p
+			INNER JOIN UnitOffering u
+			ON p.OfferingId = u.OfferingId
+			WHERE u.UnitId = pUoSId
+			AND u.TeachingPeriod = pTeachingPeriod
+			AND u.Year = pYear
+			AND p.ProjectName = pProName)
+		);
+EXCEPTION
+	WHEN NO_OFF_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20003, 'No Unit Offering Found');
+	WHEN NO_PROJ_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20005, 'No Project Found');
+END;
+
+CREATE OR REPLACE PROCEDURE ALLOCATE_PROJECT(pProName in varchar2, pUserTeamId in varchar2, pUoSId in varchar2, pTeachingPeriod in varchar2, pYear in number) AS
+vOffIdCount number;
+vProjCount number;
+vTeamCount number;
+NO_OFF_FOUND exception;
+NO_PROJ_FOUND exception;
+NO_TEAM_FOUND exception;
+BEGIN
+	SELECT COUNT(*) INTO vOffIdCount
+	  	FROM UnitOffering
+		WHERE UnitId = pUoSId
+		AND TeachingPeriod = pTeachingPeriod
+		AND Year = pYear;
+	IF vOffIdCount = 0 THEN
+	  RAISE NO_OFF_FOUND;
+	END IF;
+
+	SELECT COUNT(*) INTO vProjCount
+		FROM Project p
+		INNER JOIN UnitOffering u
+		ON p.OfferingId = u.OfferingId
+		WHERE u.UnitId = pUoSId
+		AND u.TeachingPeriod = pTeachingPeriod
+		AND u.Year = pYear
+		AND p.ProjectName = pProName;
+	IF vProjCount = 0 THEN
+	  RAISE NO_PROJ_FOUND;
+	END IF;
+
+	SELECT COUNT(*) INTO vTeamCount
+		FROM Team t
+		INNER JOIN UnitOffering u
+		ON t.OfferingId = u.OfferingId
+		WHERE u.UnitId = pUoSId
+		AND u.TeachingPeriod = pTeachingPeriod
+		AND u.Year = pYear
+		AND t.UserTeamId = pUserTeamId;
+	IF vTeamCount = 0 THEN
+		RAISE NO_TEAM_FOUND;
+	END IF;
+
+	INSERT INTO ProjectAllocation (ProjectId, TeamId) VALUES
+		((SELECT ProjectId
+			FROM Project p
+			INNER JOIN UnitOffering u
+			ON p.OfferingId = u.OfferingId
+			WHERE u.UnitId = pUoSId
+			AND u.TeachingPeriod = pTeachingPeriod
+			AND u.Year = pYear
+			AND p.ProjectName = pProName),
+		(SELECT TeamId
+			FROM Team t
+			INNER JOIN UnitOffering u
+			ON t.OfferingId = u.OfferingId
+			WHERE u.UnitId = pUoSId
+			AND u.TeachingPeriod = pTeachingPeriod
+			AND u.Year = pYear
+			AND t.UserTeamId = pUserTeamId)
+		);
+EXCEPTION
+	WHEN NO_OFF_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20003, 'No Unit Offering Found');
+	WHEN NO_PROJ_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20005, 'No Project Found');
+	WHEN NO_TEAM_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20006, 'No Team Found');
+END;
