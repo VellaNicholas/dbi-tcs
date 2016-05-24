@@ -7,62 +7,77 @@
         return $data;
     }
 
-    function validate_input(&$proUnitID, &$proID, &$proDescription, &$proSemester, &$proYear) {
-    	    
-            //Check ID
-            if (empty($_POST['proUnitID'])) {
-               $errProUnitID = 'Please enter a Unit ID for the Project';
-            } else {
-                $proUnitID = test_input($_POST["proUnitID"]);                
-            }
-            if (empty($_POST['proID'])){
-                $errProID = 'Please enter a Project ID';
-            } else {
-                $proID = test_input($_POST["proID"]);
-            }
+    function validate_input(&$proUnitID,  &$proName, &$teachingPeriod, &$year, &$descriptionPath) {
 
-            if (empty($_POST['proDescription'])){
-                $errProDescription = 'Please enter a Description';
-            } else {
-                $proDescription = test_input($_POST["proDescription"]);
-            }
-
-            if (empty($_POST['proSemester'])){
-                $errProSemester = 'Please enter a Semester';
-            } else {
-                $proSemester = test_input($_POST["proSemester"]);
-            }
-            if (empty($_POST['proYear'])){
-                $errProYear = 'Please enter a Year';
-            } else {
-                $proYear = test_input($_POST["proYear"]);
-            }
-	}
-
-	function edit_project(&$proUnitID, &$proID, &$proDescription, &$proSemester, &$proYear) {
-		
-		validate_input($proUnitID, $proID, $proDescription, $proSemester, $proYear);
-        
-		if (!$errProDescription && !$errProSemester && !$errProYear){
-            $result = insert_project($proUnitID, $proID, $proDescription, $proSemester, $proYear);
+        if (empty($_POST['proName'])){ 
+            throw new Exception('Please enter a Project Name');
+        } else {
+            $proName = test_input($_POST["proName"]);
         }
-        $proUnitID = $proID = $proDescription = $proSemester = $proYear = $e =  "";
+        if (empty($_POST['proUnitID'])){ 
+            throw new Exception('Please enter a Unit ID');
+        } else {
+            $proUnitID = test_input($_POST["proUnitID"]);
+        }
+
+        $teachingPeriod = test_input($_POST["pro_Semester"]);
+        $year = test_input($_POST["pro_Year"]);
+
+        //file upload
+        $target_dir = "/var/www/html/uploads/";
+        $target_file = $target_dir . $proName . $proUnitID . $teachingPeriod . $year . basename($_FILES["fileToUpload"]["name"]);
+        $uploadOk = 1;
+        $fileType = pathinfo($target_file,PATHINFO_EXTENSION);
+        debug_to_console($fileType);
+    
+        // Allow certain file formats
+        if($fileType != "doc" && $fileType != "docx" && $fileType != "pdf" ) {
+            throw new Exception('Please upload a DOC, DOCX or PDF document');
+        }
+        
+        if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
+            $descriptionPath = $target_file;
+        } else {
+            throw new Exception('Description was not uploaded, unknown error occurred');
+        }
+    }
+
+	function update_database(&$proUnitID, &$proName, &$teachingPeriod, &$year, &$descriptionPath) {
+		
+        try {
+            validate_input($proUnitID, $proName, $teachingPeriod, $year, $descriptionPath);
+            $result = edit_project($proUnitID, $proName, $teachingPeriod, $year, $descriptionPath);
+            $proUnitID = $proName = $teachingPeriod = $year = $descriptionPath = "";
+        } catch (Exception $e) {
+            $result = '<div class="span alert alert-danger fade in">' . $e->getMessage() . '</div>';
+        }
+
         return $result;
     }
 
-    function get_project_details(&$proUnitID, &$proID, &$proDescription, &$proSemester, &$proYear) {
+    function get_details_from_database(&$proUnitID, &$proName, &$teachingPeriod, &$year, &$descriptionPath) {
         
-        if (empty($_POST['proUnitID'])){ 
-                $errID = 'Please enter a Project Unit ID'; 
-            } or if (empty($_POST['proID'])){ 
-                $errID = 'Please enter a Project ID'; 
+        try {
+            if (empty($_POST['proName'])){ 
+                throw new Exception('Please enter a Project Name');
+            } else {
+                $proName = test_input($_POST["proName"]);
             }
-             else {
+            if (empty($_POST['proUnitID'])){ 
+                throw new Exception('Please enter a Unit ID');
+            } else {
                 $proUnitID = test_input($_POST["proUnitID"]);
-                $proID = test_input($_POST["proID"]);
-
-                get_project_details($proUnitID, $proID, $proDescription, $proSemester, $proYear);
             }
+
+            $teachingPeriod = test_input($_POST["pro_Semester"]);
+            $year = test_input($_POST["pro_Year"]);
+            
+            $result = get_project_details($proUnitID, $proName, $teachingPeriod, $year, $descriptionPath);
+        } catch (Exception $e) {
+            $result = '<div class="span alert alert-danger fade in">' . $e->getMessage() . '</div>';
+        }
+
+        return $result;
     }
 
 

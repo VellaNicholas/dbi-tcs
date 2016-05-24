@@ -106,7 +106,7 @@
                                     <a href="../convenor/regTeamAllocation.php"><i class="fa fa-plus fa-fw"></i> Allocate Project to Team</a>
                                 </li>
                                 <li>
-                                    <a href="../convenor/editTeamAllocation.php"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Allocation of Project to Team</a>
+                                    <a href="../convenor/removeTeamAllocation.php"><i class="fa fa-trash-o fa-fw"></i> Clear Project Allocation</a>
                                 </li>
                             </ul>
                         </li>';
@@ -119,5 +119,29 @@
 
     $convenor = $conHead . $convStudents . $teams . $projects . $assessments . $allocations . $conReports;
 
+    //SUPERVISOR
+    // Create and populate SUPERVISOR sub-menu variables with associated html.
+    $supHead =      '<li class="disabled">
+                        <a class = "transparent"><i class="fa fa-terminal fa-fw"></i><b> Supervisor </b></a>  
+                    </li>
+                    <ul class="nav nav-second-level">';
+    $supBook =      '<li>
+                            <a href="../supervisor/bookMeeting.php"><i class="fa fa-plus fa-fw"></i> Book Meeting</a>
+                        </li>';
+    $supConduct =      '<li>
+                            <a href="../supervisor/conductMeeting.php"><i class="fa fa-plus fa-fw"></i> Conduct Meeting</a>
+                        </li>';
+
+    $supReviewMeeting = '<li>
+                            <a href="../supervisor/reviewMeeting.php"><i class="fa fa-plus fa-fw"></i> Book Meeting</a>
+                        </li>';
+    $supReviewStudentWork = '<li>
+                            <a href="../supervisor/reviewStudentWork.php"><i class="fa fa-plus fa-fw"></i> Book Meeting</a>
+                            </li>';
+
+
+
+    //ADMIN VARIABLE: Includes all associated sub-links. Concat all variables and combine them into $admin
+    $supervisor = $supHead . $supBook . $supConduct . $supReviewMeeting . $supReviewStudentWork;
 
 ?>

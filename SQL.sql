@@ -236,7 +236,7 @@ END;
 /
 
 -- Used when a password is required to be reset, either on first login or after being forgot.
--- Takes in the Usernamem, current password, and new password.
+-- Takes in the Username, current password, and new password.
 -- Will only insert the new password if the old password is entered correctly.
 
 CREATE OR REPLACE PROCEDURE RESET_PASSWORD (pUsername varchar2, pNewPassword varchar2) AS
@@ -473,7 +473,11 @@ END;
 CREATE OR REPLACE PACKAGE INSERT_TEAM_PKG AS
 	TYPE TeamMemberArray is TABLE of varchar2(20) INDEX by pls_integer;
 	PROCEDURE INSERT_TEAM(pUosId in varchar2, pTeachingPeriod in varchar2, pYear in number, pUserTeamId in number, pTeamMembers in TeamMemberArray, pSupervisor in varchar2);
+	PROCEDURE GET_TEAM_DETAILS (pUnitID in varchar2, pYear in number, pSemester in varchar2, pTeamID in varchar2, pTeamMember out TeamMemberArray, pSupervisor out varchar2);
+	PROCEDURE UPDATE_TEAM(pUosId in varchar2, pTeachingPeriod in varchar2, pYear in number, pUserTeamId in number, pTeamMembers in TeamMemberArray, pSupervisor in varchar2);
 END INSERT_TEAM_PKG;
+
+/
 
 CREATE OR REPLACE PACKAGE BODY INSERT_TEAM_PKG AS
 	PROCEDURE INSERT_TEAM (pUosId in varchar2, pTeachingPeriod in varchar2, pYear in number, pUserTeamId in number, pTeamMembers in TeamMemberArray, pSupervisor in varchar2) IS
@@ -536,6 +540,147 @@ CREATE OR REPLACE PACKAGE BODY INSERT_TEAM_PKG AS
 		WHEN NO_SUP_FOUND THEN
 			RAISE_APPLICATION_ERROR(-20004, 'No Supervisor Found');
 	END INSERT_TEAM;
+
+	PROCEDURE GET_TEAM_DETAILS (pUnitID in varchar2, pYear in number, pSemester in varchar2, pTeamID in varchar2, pTeamMember out TeamMemberArray, pSupervisor out varchar2) IS
+	Cursor vTeamMembers IS
+		SELECT s.StuId FROM TeamStudentAllocation a
+		INNER JOIN EnrolledStudent e
+		ON a.EnrolStuId = e.EnrolStuId
+		INNER JOIN Student s
+		ON e.StuId = s.SurStuId
+		INNER JOIN Team t
+		ON a.TeamId = t.TeamId
+		INNER JOIN UnitOffering u
+		ON e.OfferingId = u.OfferingId
+		WHERE t.UserTeamId = pTeamID
+		AND u.UnitId = pUnitID
+		AND u.TeachingPeriod = pSemester
+		AND u.Year = pYear;
+
+	BEGIN
+		SELECT e.Username INTO pSupervisor
+		FROM Team t
+		INNER JOIN Employee e
+		ON t.SupervisorEmpId = e.EmpId
+		WHERE t.UserTeamId = pTeamID
+		AND t.OfferingId = (
+			SELECT u.OfferingId
+			FROM UnitOffering u
+			WHERE u.UnitId = pUnitID
+			AND u.TeachingPeriod = pSemester
+			AND u.Year = pYear
+			);
+
+	OPEN vTeamMembers;
+	FETCH vTeamMembers
+	  	BULK COLLECT INTO pTeamMember;
+	CLOSE vTeamMembers;
+	
+	END GET_TEAM_DETAILS;
+
+	PROCEDURE UPDATE_TEAM(pUosId in varchar2, pTeachingPeriod in varchar2, pYear in number, pUserTeamId in number, pTeamMembers in TeamMemberArray, pSupervisor in varchar2) IS
+		vTeamId number;
+		vOffIdCount number;
+		vSupCount number;
+		vTeamCount number;
+		NO_OFF_FOUND exception;
+		NO_SUP_FOUND exception;
+		NO_TEAM_FOUND exception;
+	BEGIN
+		SELECT COUNT(*) INTO vOffIdCount
+	  		FROM UnitOffering
+			WHERE UnitId = pUoSId
+			AND TeachingPeriod = pTeachingPeriod
+			AND Year = pYear;
+	  	IF vOffIdCount = 0 THEN
+	  	  RAISE NO_OFF_FOUND;
+	  	END IF;
+	
+	  	SELECT COUNT(*) INTO vSupCount
+	  		FROM Employee
+			WHERE Username = pSupervisor;
+	  	IF vSupCount = 0 THEN
+	  	  RAISE NO_SUP_FOUND;
+	  	END IF;
+
+	  	SELECT COUNT(*) INTO vTeamCount
+			FROM Team t
+			INNER JOIN UnitOffering u
+			ON t.OfferingId = u.OfferingId
+			WHERE u.UnitId = pUoSId
+			AND u.TeachingPeriod = pTeachingPeriod
+			AND u.Year = pYear
+			AND t.UserTeamId = pUserTeamId;
+		IF vTeamCount = 0 THEN
+			RAISE NO_TEAM_FOUND;
+		END IF;
+
+	  	UPDATE Team t
+	  	SET t.SupervisorEmpId = (SELECT e.EmpId FROM EMPLOYEE e
+	  							 WHERE e.Username = pSupervisor)
+	  	WHERE pUserTeamId = t.UserTeamId
+	  	AND pUoSId = (SELECT u.UnitId
+	  				  FROM Team t
+					  INNER JOIN UnitOffering u
+					  ON t.OfferingId = u.OfferingId
+					  WHERE u.UnitId = pUoSId
+					  AND u.TeachingPeriod = pTeachingPeriod
+					  AND u.Year = pYear
+					  AND t.UserTeamId = pUserTeamId)
+	  	AND pTeachingPeriod = (SELECT u.TeachingPeriod
+	  						   FROM Team t
+							   INNER JOIN UnitOffering u
+							   ON t.OfferingId = u.OfferingId
+							   WHERE u.UnitId = pUoSId
+							   AND u.TeachingPeriod = pTeachingPeriod
+							   AND u.Year = pYear
+							   AND t.UserTeamId = pUserTeamId)
+	  	AND pYear = (SELECT u.Year
+	  				 FROM Team t
+					 INNER JOIN UnitOffering u
+					 ON t.OfferingId = u.OfferingId
+					 WHERE u.UnitId = pUoSId
+					 AND u.TeachingPeriod = pTeachingPeriod
+					 AND u.Year = pYear
+					 AND t.UserTeamId = pUserTeamId);
+
+	  	SELECT TeamId INTO vTeamId
+			FROM Team t
+			INNER JOIN UnitOffering u
+			ON t.OfferingId = u.OfferingId
+			WHERE u.UnitId = pUoSId
+			AND u.TeachingPeriod = pTeachingPeriod
+			AND u.Year = pYear
+			AND t.UserTeamId = pUserTeamId;
+
+	  	DELETE FROM TeamStudentAllocation
+	  	WHERE TeamId = vTeamId;
+
+	  	FOR i IN 1..pTeamMembers.count LOOP
+			INSERT INTO TeamStudentAllocation VALUES
+				(vTeamId,
+				(SELECT EnrolStuId FROM EnrolledStudent e
+					INNER JOIN UnitOffering u
+	        		ON e.OfferingId = u.OfferingId
+	        		INNER JOIN Student s
+	        		ON e.StuId = s.SurStuId
+					WHERE pTeamMembers(i) = s.StuId
+	        		AND pUosId = u.UnitId
+					AND pTeachingPeriod = u.TeachingPeriod
+					AND pYear = u.Year
+				));
+		END LOOP;
+
+	EXCEPTION
+		WHEN NO_OFF_FOUND THEN
+			RAISE_APPLICATION_ERROR(-20003, 'No Unit Offering Found');
+		WHEN NO_SUP_FOUND THEN
+			RAISE_APPLICATION_ERROR(-20004, 'No Supervisor Found');
+		WHEN NO_TEAM_FOUND THEN
+			RAISE_APPLICATION_ERROR(-20005, 'No Team Found');
+
+	END UPDATE_TEAM;
+
 END INSERT_TEAM_PKG;
 
 /
@@ -688,4 +833,360 @@ EXCEPTION
 		RAISE_APPLICATION_ERROR(-20005, 'No Project Found');
 	WHEN NO_TEAM_FOUND THEN
 		RAISE_APPLICATION_ERROR(-20006, 'No Team Found');
+END;
+
+/
+
+CREATE OR REPLACE PROCEDURE GET_PROJECT_DETAILS(pUosId in varchar2, pProjectName in varchar2, pTeachingPeriod in varchar2, pYear in number, pDescription out varchar2) AS
+vOffIdCount number;
+vProjCount number;
+NO_OFF_FOUND exception;
+NO_PROJ_FOUND exception;
+BEGIN
+	SELECT COUNT(*) INTO vOffIdCount
+	  	FROM UnitOffering
+		WHERE UnitId = pUoSId
+		AND TeachingPeriod = pTeachingPeriod
+		AND Year = pYear;
+	IF vOffIdCount = 0 THEN
+	  RAISE NO_OFF_FOUND;
+	END IF;
+
+	SELECT COUNT(*) INTO vProjCount
+		FROM Project p
+		INNER JOIN UnitOffering u
+		ON p.OfferingId = u.OfferingId
+		WHERE u.UnitId = pUoSId
+		AND u.TeachingPeriod = pTeachingPeriod
+		AND u.Year = pYear
+		AND p.ProjectName = pProjectName;
+	IF vProjCount = 0 THEN
+	  RAISE NO_PROJ_FOUND;
+	END IF;
+
+	SELECT Description INTO pDescription
+		FROM Project p
+		INNER JOIN UnitOffering u
+		ON p.OfferingId = u.OfferingId
+		WHERE u.UnitId = pUoSId
+		AND u.TeachingPeriod = pTeachingPeriod
+		AND u.Year = pYear
+		AND p.ProjectName = pProjectName;
+EXCEPTION
+	WHEN NO_OFF_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20003, 'No Unit Offering Found');
+	WHEN NO_PROJ_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20005, 'No Project Found');
+END;
+
+/
+
+CREATE OR REPLACE PROCEDURE GET_ASSESSMENT_DETAILS(pTitle in varchar2, pUoSId in varchar2, pTeachingPeriod in varchar2, pYear in number,
+	pDescription out varchar2, pIndividualGroup out varchar2, pDueDate out varchar2, pMarkingGuidePath out varchar2, pProjectName in varchar2) AS
+vOffIdCount number;
+vProjCount number;
+vAssCount number;
+NO_OFF_FOUND exception;
+NO_PROJ_FOUND exception;
+NO_ASS_FOUND exception;
+vAssRow Assessment%ROWTYPE;
+BEGIN
+	SELECT COUNT(*) INTO vOffIdCount
+	  	FROM UnitOffering
+		WHERE UnitId = pUoSId
+		AND TeachingPeriod = pTeachingPeriod
+		AND Year = pYear;
+	IF vOffIdCount = 0 THEN
+	  RAISE NO_OFF_FOUND;
+	END IF;
+
+	SELECT COUNT(*) INTO vProjCount
+		FROM Project p
+		INNER JOIN UnitOffering u
+		ON p.OfferingId = u.OfferingId
+		WHERE u.UnitId = pUoSId
+		AND u.TeachingPeriod = pTeachingPeriod
+		AND u.Year = pYear
+		AND p.ProjectName = pProjectName;
+	IF vProjCount = 0 THEN
+	  RAISE NO_PROJ_FOUND;
+	END IF;
+
+	SELECT COUNT(*) INTO vAssCount
+		FROM Assessment a
+		INNER JOIN Project p
+		ON a.ProjectId = p.ProjectId
+		INNER JOIN UnitOffering u
+		ON p.OfferingId = u.OfferingId
+		WHERE u.UnitId = pUoSId
+		AND u.TeachingPeriod = pTeachingPeriod
+		AND u.Year = pYear
+		AND p.ProjectName = pProjectName
+		AND a.Title = pTitle;
+	IF vProjCount = 0 THEN
+	  RAISE NO_PROJ_FOUND;
+	END IF;
+
+	SELECT a.AssessmentId, a.Title, a.Description, a.IsIndividualGroup, a.MarkingGuide, a.DueDate, a.ProjectId
+		INTO vAssRow
+		FROM Assessment a
+		INNER JOIN Project p
+		ON a.ProjectId = p.ProjectId
+		INNER JOIN UnitOffering u
+		ON p.OfferingId = u.OfferingId
+		WHERE u.UnitId = pUoSId
+		AND u.TeachingPeriod = pTeachingPeriod
+		AND u.Year = pYear
+		AND p.ProjectName = pProjectName
+		AND a.Title = pTitle;
+
+	pDescription := vAssRow.Description;
+	pIndividualGroup := vAssRow.IsIndividualGroup;
+	pDueDate := vAssRow.DueDate;
+	pMarkingGuidePath := vAssRow.MarkingGuide;
+EXCEPTION
+	WHEN NO_OFF_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20003, 'No Unit Offering Found');
+	WHEN NO_PROJ_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20005, 'No Project Found');
+	WHEN NO_ASS_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20006, 'No Assignment Found');
+END;
+
+/
+
+CREATE OR REPLACE PROCEDURE UPDATE_PROJECT (pUosId in varchar2, pProjectName in varchar2, pTeachingPeriod in varchar2, pYear in number, pDescription in varchar2) AS
+vOffIdCount number;
+vProjCount number;
+NO_OFF_FOUND exception;
+NO_PROJ_FOUND exception;
+BEGIN
+	SELECT COUNT(*) INTO vOffIdCount
+	  	FROM UnitOffering
+		WHERE UnitId = pUoSId
+		AND TeachingPeriod = pTeachingPeriod
+		AND Year = pYear;
+	IF vOffIdCount = 0 THEN
+	  RAISE NO_OFF_FOUND;
+	END IF;
+
+	SELECT COUNT(*) INTO vProjCount
+		FROM Project p
+		INNER JOIN UnitOffering u
+		ON p.OfferingId = u.OfferingId
+		WHERE u.UnitId = pUoSId
+		AND u.TeachingPeriod = pTeachingPeriod
+		AND u.Year = pYear
+		AND p.ProjectName = pProjectName;
+	IF vProjCount = 0 THEN
+	  RAISE NO_PROJ_FOUND;
+	END IF;
+
+	UPDATE Project p
+	SET p.Description = pDescription
+	WHERE pProjectName = p.ProjectName
+	AND pUoSId = (SELECT u.UnitId
+				  FROM Project p
+				  INNER JOIN UnitOffering u
+				  ON p.OfferingId = u.OfferingId
+				  WHERE u.UnitId = pUoSId
+				  AND u.TeachingPeriod = pTeachingPeriod
+				  AND u.Year = pYear
+				  AND p.ProjectName = pProjectName)
+	AND pTeachingPeriod = (SELECT u.TeachingPeriod
+						   FROM Project p
+						   INNER JOIN UnitOffering u
+						   ON p.OfferingId = u.OfferingId
+						   WHERE u.UnitId = pUoSId
+						   AND u.TeachingPeriod = pTeachingPeriod
+						   AND u.Year = pYear
+						   AND p.ProjectName = pProjectName)
+	AND pYear = (SELECT u.Year
+				 FROM Project p
+				 INNER JOIN UnitOffering u
+				 ON p.OfferingId = u.OfferingId
+				 WHERE u.UnitId = pUoSId
+				 AND u.TeachingPeriod = pTeachingPeriod
+				 AND u.Year = pYear
+				 AND p.ProjectName = pProjectName);
+EXCEPTION
+	WHEN NO_OFF_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20003, 'No Unit Offering Found');
+	WHEN NO_PROJ_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20005, 'No Project Found');
+END;
+
+/
+
+CREATE OR REPLACE PROCEDURE UPDATE_ASSESSMENT(pTitle in varchar2, pUoSId in varchar2, pTeachingPeriod in varchar2, pYear in number,
+	pDescription in varchar2, pIndividualGroup in varchar2, pDueDate in varchar2, pMarkingGuidePath in varchar2, pProjectName in varchar2) AS 
+vOffIdCount number;
+vProjCount number;
+vAssCount number;
+NO_OFF_FOUND exception;
+NO_PROJ_FOUND exception;
+NO_ASS_FOUND exception;
+BEGIN
+	SELECT COUNT(*) INTO vOffIdCount
+	  	FROM UnitOffering
+		WHERE UnitId = pUoSId
+		AND TeachingPeriod = pTeachingPeriod
+		AND Year = pYear;
+	IF vOffIdCount = 0 THEN
+	  RAISE NO_OFF_FOUND;
+	END IF;
+
+	SELECT COUNT(*) INTO vProjCount
+		FROM Project p
+		INNER JOIN UnitOffering u
+		ON p.OfferingId = u.OfferingId
+		WHERE u.UnitId = pUoSId
+		AND u.TeachingPeriod = pTeachingPeriod
+		AND u.Year = pYear
+		AND p.ProjectName = pProjectName;
+	IF vProjCount = 0 THEN
+	  RAISE NO_PROJ_FOUND;
+	END IF;
+
+	SELECT COUNT(*) INTO vAssCount
+		FROM Assessment a
+		INNER JOIN Project p
+		ON a.ProjectId = p.ProjectId
+		INNER JOIN UnitOffering u
+		ON p.OfferingId = u.OfferingId
+		WHERE u.UnitId = pUoSId
+		AND u.TeachingPeriod = pTeachingPeriod
+		AND u.Year = pYear
+		AND p.ProjectName = pProjectName
+		AND a.Title = pTitle;
+	IF vProjCount = 0 THEN
+	  RAISE NO_PROJ_FOUND;
+	END IF;
+
+	UPDATE Assessment
+	SET Description = pDescription,
+		IsIndividualGroup = pIndividualGroup,
+		DueDate = pDueDate,
+		MarkingGuide = pMarkingGuidePath
+	WHERE pTitle = Title
+	AND pUoSId = (SELECT u.UnitId
+				  FROM Assessment a
+				  INNER JOIN Project p
+				  ON a.ProjectId = p.ProjectId
+				  INNER JOIN UnitOffering u
+				  ON p.OfferingId = u.OfferingId
+				  WHERE u.UnitId = pUoSId
+				  AND u.TeachingPeriod = pTeachingPeriod
+				  AND u.Year = pYear
+				  AND p.ProjectName = pProjectName
+				  AND a.Title = pTitle)
+	AND pTeachingPeriod = (SELECT u.TeachingPeriod
+						   FROM Assessment a
+				  		   INNER JOIN Project p
+				  		   ON a.ProjectId = p.ProjectId
+						   INNER JOIN UnitOffering u
+						   ON p.OfferingId = u.OfferingId
+						   WHERE u.UnitId = pUoSId
+						   AND u.TeachingPeriod = pTeachingPeriod
+						   AND u.Year = pYear
+						   AND p.ProjectName = pProjectName
+						   AND a.Title = pTitle)
+	AND pYear = (SELECT u.Year
+				 FROM Assessment a
+				 INNER JOIN Project p
+				 ON a.ProjectId = p.ProjectId
+				 INNER JOIN UnitOffering u
+				 ON p.OfferingId = u.OfferingId
+				 WHERE u.UnitId = pUoSId
+				 AND u.TeachingPeriod = pTeachingPeriod
+				 AND u.Year = pYear
+				 AND p.ProjectName = pProjectName
+				 AND a.Title = pTitle)
+	AND pProjectName = (SELECT p.ProjectName
+						FROM Assessment a
+						INNER JOIN Project p 
+						ON a.ProjectId = p.ProjectId
+						AND a.Title = pTitle);
+EXCEPTION
+	WHEN NO_OFF_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20003, 'No Unit Offering Found');
+	WHEN NO_PROJ_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20005, 'No Project Found');
+	WHEN NO_ASS_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20006, 'No Assignment Found');
+END;
+
+CREATE OR REPLACE PROCEDURE REMOVE_PROJ_ALLOCATION(pProName in varchar2, pUserTeamId in varchar2, pUoSId in varchar2, pTeachingPeriod in varchar2, pYear in number) AS
+vOffIdCount number;
+vProjCount number;
+vTeamCount number;
+NO_OFF_FOUND exception;
+NO_PROJ_FOUND exception;
+NO_TEAM_FOUND exception;
+NO_ROWS_DELETED exception;
+BEGIN
+	SELECT COUNT(*) INTO vOffIdCount
+	  	FROM UnitOffering
+		WHERE UnitId = pUoSId
+		AND TeachingPeriod = pTeachingPeriod
+		AND Year = pYear;
+	IF vOffIdCount = 0 THEN
+	  RAISE NO_OFF_FOUND;
+	END IF;
+
+	SELECT COUNT(*) INTO vProjCount
+		FROM Project p
+		INNER JOIN UnitOffering u
+		ON p.OfferingId = u.OfferingId
+		WHERE u.UnitId = pUoSId
+		AND u.TeachingPeriod = pTeachingPeriod
+		AND u.Year = pYear
+		AND p.ProjectName = pProName;
+	IF vProjCount = 0 THEN
+	  RAISE NO_PROJ_FOUND;
+	END IF;
+
+	SELECT COUNT(*) INTO vTeamCount
+		FROM Team t
+		INNER JOIN UnitOffering u
+		ON t.OfferingId = u.OfferingId
+		WHERE u.UnitId = pUoSId
+		AND u.TeachingPeriod = pTeachingPeriod
+		AND u.Year = pYear
+		AND t.UserTeamId = pUserTeamId;
+	IF vTeamCount = 0 THEN
+		RAISE NO_TEAM_FOUND;
+	END IF;
+
+	DELETE FROM ProjectAllocation
+	WHERE ProjectId = (SELECT ProjectId
+					   FROM Project p
+					   INNER JOIN UnitOffering u
+					   ON p.OfferingId = u.OfferingId
+					   WHERE u.UnitId = pUoSId
+					   AND u.TeachingPeriod = pTeachingPeriod
+					   AND u.Year = pYear
+					   AND p.ProjectName = pProName)
+	AND TeamId = (SELECT TeamId
+				  FROM Team t
+				  INNER JOIN UnitOffering u
+				  ON t.OfferingId = u.OfferingId
+				  WHERE u.UnitId = pUoSId
+				  AND u.TeachingPeriod = pTeachingPeriod
+				  AND u.Year = pYear
+				  AND t.UserTeamId = pUserTeamId);
+
+	IF (SQL%ROWCOUNT = 0) THEN
+		RAISE NO_ROWS_DELETED;
+	END IF;
+
+EXCEPTION
+	WHEN NO_OFF_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20003, 'No Unit Offering Found');
+	WHEN NO_PROJ_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20005, 'No Project Found');
+	WHEN NO_TEAM_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20006, 'No Team Found');
+	WHEN NO_ROWS_DELETED THEN
+		RAISE_APPLICATION_ERROR(-20007, 'No Rows Deleted');
 END;

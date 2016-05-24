@@ -70,8 +70,6 @@
                                     <input class="form-control"
                                     name="unit_ID"
                                     placeholder="Enter Unit ID">
-
-                                   <?php echo "<p class='text-danger'>$errProUnitID</p>"; ?>
                                 </div>
 
                                 <div class="form-group">

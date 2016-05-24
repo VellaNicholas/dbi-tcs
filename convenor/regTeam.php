@@ -27,7 +27,7 @@
 
         //Check if submit button is pressed
         if (isset($_POST["submit"])) {
-            $result = insert_to_database($$unitID, $unitYear, $unitSemester, $teamID, $team_member, $teamSupervisor);
+            $result = insert_to_database($unitID, $unitYear, $unitSemester, $teamID, $team_member, $teamSupervisor);
         }
     ?>
     <?php
@@ -58,21 +58,27 @@
                             <p class="help-block">All fields marked with * are mandatory.</p>
                             <fieldset>
                                 <div class="form-group">
-                                 <!-- Div for Semester -->
-                                    <div class="form-group">
-                                        <label>*Unit ID</label>
-                                        <input class="form-control"
-                                        name="unit_ID"
-                                        placeholder="Enter Unit ID">
+                                    <label>*Team ID</label>
+                                    <input class="form-control"
+                                    name="team_ID"
+                                    placeholder="Enter Team ID">
     
-                                    </div> 
-                                    <label for="unit_Semester">Select Semester:</label>
-                                        <select class="form-control" id="unit_Semester" name="unit_Semester">
-                                            <option>Semester 1</option>
-                                            <option>Semester 2</option>
-                                            <option>Summer</option>
-                                            <option>Winter</option>
-                                        </select>
+                                   <!-- <?php echo "<p class='text-danger'>$errID</p>"; ?> Change this -->
+                                </div>
+                                <div class="form-group">
+                                    <label>*Unit ID</label>
+                                    <input class="form-control"
+                                    name="unit_ID"
+                                    placeholder="Enter Unit ID">
+    
+                                </div> 
+                                <label for="unit_Semester">Select Semester:</label>
+                                    <select class="form-control" id="unit_Semester" name="unit_Semester">
+                                        <option>Semester 1</option>
+                                        <option>Semester 2</option>
+                                        <option>Summer</option>
+                                        <option>Winter</option>
+                                    </select>
                                 </div>
     
                                 <!-- Div for Year -->
@@ -86,20 +92,11 @@
                                   </select>
                                 </div>
 
-                                 <div class="form-group">
+                                <div class="form-group">
                                     <label>*Superviser Username</label>
                                     <input class="form-control"
                                     name="supervisor_ID"
                                     placeholder="Enter Supervisor Username">
-    
-                                   <!-- <?php echo "<p class='text-danger'>$errID</p>"; ?> Change this -->
-                                </div>
-                                         
-                                <div class="form-group">
-                                    <label>*Team ID</label>
-                                    <input class="form-control"
-                                    name="team_ID"
-                                    placeholder="Enter Team ID">
     
                                    <!-- <?php echo "<p class='text-danger'>$errID</p>"; ?> Change this -->
                                 </div>

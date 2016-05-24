@@ -29,7 +29,7 @@
 
         //file upload
         $target_dir = "/var/www/html/uploads/";
-        $target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
+        $target_file = $target_dir . $proName . $proUnitID . $teachingPeriod . $year . basename($_FILES["fileToUpload"]["name"]);
         $uploadOk = 1;
         $fileType = pathinfo($target_file,PATHINFO_EXTENSION);
         // Check if image file is a actual image or fake image
