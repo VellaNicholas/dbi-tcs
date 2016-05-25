@@ -1,40 +1,44 @@
-<?php 
-    //Includes all relevant files
+<?php
     session_start();
-    include '../global/ini.php';
+    include '../global/ini.php'; 
     include '../global/navigation.php';
     include 'dataAccess.php';
-    include './controller/contRegProject.php';
+    include './controller/contRegAssessment.php';
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <title>Register Project</title>
+    <title>Create an Assessment</title>
 </head>
 
 <body>
     <?php
-        $proUnitID =  $proName = $teachingPeriod = $year = $descriptionPath = "";
+        //Initalise variable to null
+        $assTitle = $unitID = $semester = $year = $description = $isIndividualGroup = $dueDate = $markingGuidePath = $proName = "";
 
-        //Check if submit button is pressed
+        //When the submit button is pressed, call the database function from the controller layer
         if (isset($_POST["submit"])) {
-            $result = insert_to_database($proUnitID,  $proName, $teachingPeriod, $year, $descriptionPath);
-        }
+            $result = insert_to_database($assTitle, $unitID, $semester, $year, $description, $isIndividualGroup, $dueDate, $markingGuidePath, $proName);
+        }           
     ?>
     <?php
+    
+        //stops the page load for all except admins
         if (! IsConvenor() ) {
             include '../global/noPermissions.php';
             exit;
         };
     ?>
+
+    <!-- Begin page wrapper -->
     <div id="wrapper">
         <div id="page-wrapper">
             <div class="row">
                 <div class="col-lg-12">
-                    <h1 class="page-header">Register Project</h1>
+                <!-- Page Header -->
+                    <h1 class="page-header">Create Assessment</h1>
                 </div>
                 <!-- /.col-lg-12 -->
             </div>
@@ -42,33 +46,32 @@
             <!-- NEW ROW HERE -->
             <div class="row">
                 <div class="col-lg-6">
-                <?php echo $result; ?> 
+                <?php echo $result; ?>
+                <!-- Panel Heading -->
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            Enter Project Details
+                            Enter Assessment Details
                         </div> 
-                    <div class="panel-body">            
+                        <!-- Panel Body -->
+                    <div class="panel-body">
+                        <!-- Initialise form with POST method -->
                         <form role="form" method="post" enctype="multipart/form-data" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
                             <p class="help-block">All fields marked with * are mandatory.</p>
                             <fieldset>
+                            <!-- Begin create assessment input form controls -->
                                 <div class="form-group">
-                                    <label>*Project Name</label>
+                                    <label>*Assessment Title</label>
                                     <input class="form-control"
-                                    name="pro_name"
-                                    placeholder="Enter Project Name">
-
-                                   <?php echo "<p class='text-danger'>$errProID</p>"; ?>
-                                </div> 
+                                    name="ass_Title"
+                                    placeholder="Enter Assessment Title">
+                                </div>
                                 <div class="form-group">
                                     <label>*Unit ID</label>
                                     <input class="form-control"
                                     name="unit_ID"
                                     placeholder="Enter Unit ID">
-
-                                   <?php echo "<p class='text-danger'>$errProUnitID</p>"; ?>
                                 </div>
 
-                                
                                 <div class="form-group">
                                  <!-- Div for Semester -->
                                   <label for="teaching_period">*Select Semester:</label>
@@ -90,31 +93,40 @@
                                     <option><?php echo date("Y") + 3; ?></option>
                                   </select>
                                 </div>
-                
-                                <label>*Upload a Project Description:</label>
+                                <div class="form-group">
+                                    <label>*Project Name</label>
+                                    <input class="form-control"
+                                    name="proj_name"
+                                    placeholder="Enter Project Name">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>*Description</label>
+                                    <input class="form-control" 
+                                    name="ass_Description" 
+                                    placeholder="Enter Description">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ass_Individual">*Individual or Group</label>
+                                    <select class="form-control" id = ass_Indiviual name="ass_Individual">
+                                        <option>Individual</option>
+                                        <option>Group</option>
+                                    </select> 
+                                </div>
+                                <div class="form-group">
+                                    <label>*Due Date</label>
+                                    <input class="form-control"
+                                    name="due_Date"
+                                    placeholder="Enter Due Date">
+                                </div>
+
+                                <label>*Upload a Marking Guide:</label>
                                 <input type="file" name="fileToUpload" id="fileToUpload">
                                 <br>
-                                                                                           
+
                                 <input class="btn btn-lg btn-success btn-block" type="submit" name="submit" value="Register >>">
                             </fieldset>
                         </form>
-                        <!-- MODALS -->
-                        <div id="successModal" class="modal fade" role="dialog" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h4 class="modal-title">Success!</h4>
-                                    </div>
-                                    <div class="modal-body">
-                                        <p>Unit successfully added!</p>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-success btn-block" data-dismiss="modal">Return to Dashboard
-                                        </button>
-                                    </div>
-                                </div>    
-                            </div>
-                        </div>
                    </div>
                 </div>
             </div>

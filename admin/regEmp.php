@@ -1,9 +1,14 @@
+<!-- UPON THE CONSUMPTION OF A HSP, ALLAH WILL BLESS THIS CODE AND BANISH ALL SYNTAX ERRORS AND COMPILATION ERRORS. MASHALLAH -->
+<!-- This page handles the presentation layer of the register employee page, available only to users with Admin permissions -->
 <?php 
     session_start();
     include '../global/ini.php';
     include '../global/navigation.php';
 ?>
 
+<!-- Having some issues with jQuery not loading properly, this ensures that jQuery works fine by downloading it straight
+from the source. Remember to add this to the jqueryref.php file, or alternatively, ini.php -->
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -90,14 +95,27 @@
             } else {
                 $result='<div class="span alert alert-danger fade in"><strong>Oops! </strong>something unexpected happened! Please try registering this Employee later.</div>';
             }
-        }           
+        }         
 
+        //Prevents XSS and SQL injection
         function test_input($data) {
             $data = trim($data);
             $data = stripslashes($data);
             $data = htmlspecialchars($data);
             return $data;
         }
+
+        //Remove later. Not necessary
+        function debug_to_console( $data ) {
+
+            if ( is_array( $data ) )
+                $output = "<script>console.log( 'Debug Objects: " . implode( ',', $data) . "' );</script>";
+            else
+                $output = "<script>console.log( 'Debug Objects: " . $data . "' );</script>";
+
+            echo $output;
+        }
+
     ?>
     <?php
         if (! IsAdmin() ) {
@@ -109,7 +127,7 @@
         <div id="page-wrapper">
             <div class="row">
                 <div class="col-lg-12">
-                    <h1 class="page-header">Register Employee</h1>
+                    <h1 class="page-header">Register Employee v.i</h1>
                 </div>
                 <!-- /.col-lg-12 -->
             </div>
@@ -171,12 +189,6 @@
                                     data-parsley-type="number">
 
                                     <?php echo "<p class='text-danger'>$errContact</p>"; ?>                                    
-                                </div>
-                                <div class="checkbox">
-                                    <input type="checkbox" name="emp_IsAdmin" placeholder="Enter phone number"
-                                    data-parsley-type="number">
-
-                                    <?php echo "<p class='text-danger'>$errContact</p>"; ?>                                    
                                 </div>                                                           
                                 <div class="text-center">
                                     <input class="btn btn-lg btn-success btn-block" type="submit" name="submit" value="Register >>">
@@ -196,6 +208,23 @@
                             </fieldset>
                         </form>
 
+                        <!--<?php
+                            /*$row = 1;
+                            if (isset($_FILE["csvInput"])){
+                                if (($handle = fopen("csvInput", "r+")) !== FALSE){
+                                    while (($data = fgetcsv($handle)) !== FALSE){
+                                        $num = count($data);
+                                        echo "<p> $num fields in line $row: <br /></p>\n";
+                                        $row++;
+                                        for ($c=0; $c < $num; $c++) {
+                                            echo $data[$c] . "<br />\n";
+                                        }
+                                    }
+                                fclose($handle);
+                                }
+                            }
+                            */
+                        ?> -->
                         <!-- CSV MODAL -->
                         <div id="csvUpload" class="modal fade" role="dialog">
                             <div class="modal-dialog">
@@ -207,7 +236,459 @@
                                         <p>Please select a CSV file from your local machine to import</p>
                                         <br>
                                         <label class="control-label">Select CSV File</label>
-                                        <input id="csvInput" type="file" class="file" accept=".csv">
+                                        <input name="csvInput" id="csvInput" type="file" class="file" accept=".csv">
+
+                                        <!-- Will output an error if file selected in browser is not a csv. -->
+                                        <p id="csvError" class="text-danger"></p>
+
+                                        <!-- loading spinner -->
+                                        <div class="loadingIcon">
+                                            <p id="loading" class="fa fa-spinner fa-spin" style="display:none;"></p>
+                                        </div>
+                                        <!-- TO OUTPUT ALL RESULTS OF CSV VALIDATION -->
+                                        <!-- Spawns a hidden table -->
+                                        <div class="outputArea">
+                                            <p id="output" class="output">
+                                            </p>
+                                        </div>
+
+                                        <!-- NEW TECH! YAY! 
+                                        Maybe clear the fileInput control when the CANCEL button is pressed? Are there any repercussions? Do it later.
+                                        AJAX is absolutely required to send variables (the cleaned rows) to PHP for further validation and entry to database
+                                        Inititalise csv upload javascript -->
+                                        <script type="text/javascript">
+        
+                                            //Simply handles when the upload button is pressed. Messy, but it works. As it stands, there is no
+                                            //simpler way of doing this with the fileInput js plugin installed.
+
+                                            //  --ENTRY POINT--
+                                            //When the user selects a file, look for the btn that contains the index = 3 (upload) and the button that contains the index = 1 (remove).
+                                            $(document).ready(function() {
+                                                document.getElementById("csvInput").addEventListener('change', function(){
+                                                    //Clear any old data from output area
+                                                    document.getElementById("output").innerHTML = "";
+                                                    //The file input upload button is index = 3 of all btn classes on page. The remove button is index = 1. Refer to these buttons as i=3 and i=1 respectively. Again, no way to make this simpler. Research this further.
+                                                    var removeBtn = document.getElementsByClassName("btn")[1];
+                                                    var uploadBtn = document.getElementsByClassName("btn")[3];
+    
+                                                    //When the upload button is clicked, get the filename/filepath
+                                                    uploadBtn.addEventListener("click", handleUploadClick);
+
+                                                    removeBtn.addEventListener("click", function(){
+                                                        //Clear the error messages on cancel.
+                                                        document.getElementById("csvError").innerHTML = "";
+                                                        //Clear the output textarea of old data
+                                                        document.getElementById("output").innerHTML = "";
+                                                        //Hide the output textarea on cancel.
+                                                        //document.getElementById("outputTable").style.display = "none";
+                                                    });
+    
+                                                    });
+
+
+                                                    
+                                                }
+                                            );
+    
+                                            //Retrieves the file extension by finding the substring after the character '.' and returns that substring
+                                            function getExtension(path) {
+                                                var parts = path.split('.');
+                                                return parts[parts.length - 1];
+                                            }
+
+                                            function handleUploadClick()  {
+                                                var file = document.getElementById("csvInput").files[0];
+                                                console.log(file);
+    
+                                                //move to Upload Data function later m8
+                                                if (loadValidCSV(file)){
+                                                    console.log("ALLAH HAS BLESSED US, file is validated");
+                                                } else {
+                                                    console.log("FUCK something went wrong, file is haram");
+                                                }
+                                            }
+                                            
+                                            //Checks if the provided filePath is actually a csv file. Does this by calling getExtension, and comparing 
+                                            //the result with "csv". Returns true if the file is a CSV.
+                                            function isCSV(csvPath){
+                                                var extension = getExtension(csvPath);
+                                                if (extension.toLowerCase() == "csv")
+                                                {
+                                                    return true;
+                                                } else {
+                                                    return false;
+                                                }
+                                            }
+
+                                            //Checks if the CSV file has the appropriate number of fields. If it doesn't, it rejects the file and spits back an error message.
+                                            function validateNumFields(row, data){
+                                                var numFields = data[row].length;
+                                                if (numFields < 5 || numFields > 5){
+                                                    //ONE row could reject the whole file. Is this okay?
+                                                    document.getElementById("csvError").innerHTML = "The requested file does not have the correct number of fields. Ensure that ALL fields in the requested file strictly consists of 5 fields per row (username, firstName, lastName, email, contact)";
+                                                    return false;
+
+                                                } else if (numFields == 5){
+                                                    return true;
+                                                }
+                                            }
+
+                                            function isEmpty(str) {
+                                                return typeof str == 'string' && !str.trim() || typeof str == 'undefined' || str === null;
+                                            }
+
+                                            function isNumeric(n) {
+                                                return !isNaN(parseFloat(n)) && isFinite(n);
+                                            }     
+                                            //Cannot be null. Max characters?
+                                            function validateName(name){
+                                                //Apply validation logic here
+                                                var maxUserChars = 40;
+                                                if (isEmpty(name)){
+                                                    return {type:"missingField", validated:false};
+                                                } else if (name.length > maxUserChars) {
+                                                    return {type:"maxChars", validated:false};
+                                                } else {
+                                                    return true;
+                                                }
+                                                
+                                            }
+
+                                            function validateEmail(email) {
+                                                var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                                                if (isEmpty(email)){
+                                                    return {type:"missingField", validated:false};
+                                                } else if (re.test(email) == false){
+                                                    return {type:"invalidFormat", validated:false};
+                                                } else {
+                                                    return true;
+                                                }
+                                            }
+
+                                            //can handle IDs and contact numbers
+                                            function validateNumbers(number) {
+                                                var maxNum = 15;
+
+                                                if (isEmpty(number) == true){
+                                                    return true;
+                                                } else if (isNumeric(number) == false || number.match(/[a-z]/i)){
+                                                    return {type:"notNumber", validated:false};
+                                                } else if (number.length > 15){
+                                                    return {type:"maxChars", validated:false};
+                                                } else {
+                                                    return true;
+                                                }
+                                            }
+
+                                            //Handles firstname and lastnames. Cannot contain numbers. Cannot be null. Max characters? Set to 40 to account for
+                                            //people with last names like: "Wolfeschlegelsteinhausenbergerdorff" (Yes, its actually a thing).
+
+                                            //FIX THIS ASAP
+                                            function validateRow(row, data){
+                                                row_loop:
+                                                for (var field in data[row]){
+                                                    var output = "";
+                                                    //Put switch statement here
+                                                    switch(field){
+                                                        //If statement here for all validation types (student vs employee)
+                                                        //Put it inside the case '0' statement.
+                                                        //Validate first field
+                                                        case '0':
+                                                            var usernameInput = validateName(data[row][field]);
+                                                            //If the validate function returns a string, output the error.
+                                                            if (usernameInput["validated"] == false){
+                                                                return {type:usernameInput["type"], origin:0, validated:false, row:Number(row) + 1};
+                                                            } else {
+                                                                break;
+                                                            }
+                                                        case '1':
+                                                            var firstnameInput = validateName(data[row][field]);
+                                                            //If the validate function returns a string, output the error.
+                                                            if (firstnameInput["validated"] == false){
+
+                                                                return {type:firstnameInput["type"], origin:1, validated:false, row:Number(row) + 1};
+                                                            } else {
+                                                                break;
+                                                            }
+                                                        case '2':
+                                                            var surnameInput = validateName(data[row][field]);
+                                                            //If the validate function returns a string, output the error.
+                                                            if (surnameInput["validated"] == false){
+
+                                                                return {type:surnameInput["type"], origin:2, validated:false, row:Number(row) + 1};
+                                                            } else {
+                                                                break;
+                                                            }
+                                                        case '3':
+                                                            var emailInput = validateEmail(data[row][field]);
+                                                            //If the validate function returns a string, output the error.
+                                                            if (emailInput["validated"] == false){
+
+                                                                return {type:emailInput["type"], origin:3, validated:false, row:Number(row) + 1};
+                                                            } else {
+                                                                break;
+                                                            }
+                                                        case '4':
+                                                            var contactInput = validateNumbers(data[row][field]);
+                                                            //If the validate function returns a string, output the error.
+                                                            if (contactInput["validated"] == false){
+
+                                                                return {type:contactInput["type"], origin:4, numType:"contact", validated:false, row:Number(row) + 1};
+                                                            } else {
+                                                                break;
+                                                            }
+
+
+                                                        default:
+                                                            break;
+                                                    }
+                                                }
+                                                //Returns the successful row and all of its fields to be sent to the server
+                                                return {validated:true, type:"success", row:row, username:data[row][0], firstName: data[row][1], lastName: data[row][2], email: data[row][3], contact: data[row][4]};
+                                            }
+
+                                            function outputResults(rows, type, field){
+                                                var outputArea = document.getElementById("output");
+                                                if (rows.length == 0){
+                                                    return "";
+                                                } else {
+                                                    var rowsOutput = rows.toString();
+                                                    var message = "";
+                                                    switch (type){
+                                                        case "missingField":
+                                                            message = "<p class='bg-danger'>No " + field + " found on";
+                                                            break;
+                                                        case "maxChars":
+                                                            message = "<p class='bg-danger'>" + field + " has exceeded maximum characters on";
+                                                            break;
+                                                        case "invalidFormat":
+                                                            message = "<p class='bg-danger'>Email is incorrectly formatted on";
+                                                            break;
+                                                        case "notNumber":
+                                                            message = "<p class='bg-danger'>" + field + " is not numeric on";
+                                                            break;
+                                                        case "databaseFail":
+                                                            message = "<p class='bg-danger'> Employee already exists on";
+                                                            break;
+                                                        case "success":
+                                                            message = "<p class='bg-success'>Successfully added";
+                                                            break;
+                                                    }
+                                                    //textOut.innerHTML = textOut.innerHTML + message + " rows: (" + rowsOutput + ") " + "&#13;&#10;";outputArea
+
+                                                    outputArea.innerHTML = outputArea.innerHTML + message + " rows: (" + rowsOutput + ") </p>";
+                                                }
+                                            }
+
+                                            //function sendToServer(){
+                                            //    var validate_input = function(username, firstname, surname, email, contact) {
+                                            //        var xhttp = new XMLHttpRequest();
+                                            //        xhttp.onreadystatechange = function() {
+                                            //            if (xhttp.readyState == 4 && xhttp.status == 200){
+                                            //               $.ajax({
+                                            //                url: './controller/empAjaxValidation.php',
+                                            //                type: 'POST',
+                                            //                data: {username:username, firstname:firstname, surname:surname, email:email, contact//:contact},
+                                            //                success: function(data) {
+                                            //                    console.log('AJAX OUTPUT: ' + data); // Inspect this in your console
+                                            //                }
+                                            //                }); 
+                                            //            }
+                                            //        }
+                                            //        
+                                            //    };
+                                            //}
+                                            //Main validation method. Loads data, then validates it.
+                                            function loadValidCSV(csvFile){
+                                                if (isCSV(csvFile.name)) {
+                                                    var loadingIcon = document.getElementById("loading");
+                                                    loadingIcon.style.display = "inline-block";
+                                                    //Main validation code
+                                                    var validateMsg = "";
+                                                    var reader = new FileReader();
+                                                    reader.readAsText(csvFile);
+
+                                                    reader.onload = function(event){
+                                                        var csv = event.target.result;
+                                                        var data = $.csv.toArrays(csv);
+
+                                                        //Declare arrays for all possible output messages. THis will store the affected rows.
+                                                        //Initially, rows that pass front end validation, but not backend or serverside.
+                                                        //Will be cleaned later when compared with the rows that failed DB validation.
+                                                        var successfulRow = [];
+
+                                                        //Username errors
+                                                        var noUsernameErrRows = [];
+                                                        var userMaxChars = [];
+
+                                                        //Firstname errors
+                                                        var noFnameErrRows = [];
+                                                        var fnameMaxChars = [];
+
+                                                        //Surname errors
+                                                        var noSnameErrRows = [];
+                                                        var snameMaxChars = [];
+
+                                                        //Email errors
+                                                        var noEmailErrRows = [];
+                                                        var badEmailFormat = [];
+
+                                                        //Contact number errors
+                                                        var contactNotNumeric = [];
+                                                        var contactMaxChars = [];
+
+                                                        //Unique errors
+                                                        var databaseFailedRows = [];
+
+
+                                                        //For every row, 
+                                                        for (var row in data){
+                                                            //Not entirely necessary, but i need to find a way to get rows before the for loop. Only realistically checks once though before breaking so...
+                                                            if (validateNumFields(row, data) == false){
+                                                                //break;
+                                                                return false;
+                                                            }
+
+                                                            // If everything is all good, assign validateMsg with an error if validateRow() provides one.
+                                                            //If validateRow returns false, add violating row to array.
+                                                            var activeRow = validateRow(row,data);
+                                                            if (activeRow["validated"] == false){
+                                                                switch (activeRow["type"]){
+                                                                    case "missingField":
+                                                                        switch (activeRow["origin"]){
+                                                                            case 0:
+                                                                                noUsernameErrRows.push(activeRow["row"]);
+                                                                                break; 
+                                                                            case 1:
+                                                                                noFnameErrRows.push(activeRow["row"]);
+                                                                                break;
+                                                                            case 2:
+                                                                                noSnameErrRows.push(activeRow["row"]);
+                                                                                break;
+                                                                            case 3:
+                                                                                noEmailErrRows.push(activeRow["row"]);
+                                                                                break;
+                                                                        }
+                                                                        break;
+                                                                    case "maxChars":
+                                                                        switch (activeRow["origin"]){
+                                                                            case 0:
+                                                                                userMaxChars.push(activeRow["row"]);
+                                                                                break;
+                                                                            case 1:
+                                                                                fnameMaxChars.push(activeRow["row"]);
+                                                                                break;
+                                                                            case 2:
+                                                                                snameMaxChars.push(activeRow["row"]);
+                                                                                break;
+                                                                            case 4: 
+                                                                                contactMaxChars.push(activeRow["row"]);
+                                                                                break;
+                                                                        }
+                                                                        break; 
+                                                                    case "invalidFormat":
+                                                                        badEmailFormat.push(activeRow["row"]);
+                                                                        break; 
+                                                                    case "notNumber":
+                                                                        switch (activeRow["numType"]){
+                                                                            case "contact":
+                                                                                contactNotNumeric.push(activeRow["row"]);
+                                                                                break;
+                                                                        }
+                                                                }
+                                                            } else {
+                                                                //Add row
+                                                                var req = $.ajax({
+                                                                  method: "POST",
+                                                                  url: "./controller/empAjaxValidation.php",
+                                                                  data: { username: activeRow["username"], firstName:activeRow["firstName"], lastName:activeRow["lastName"], email:activeRow["email"], contact:activeRow["contact"], row:Number(activeRow["row"]) + 1}
+                                                                })
+                                                                  .done(function( msg ) {
+                                                                    if (msg != "") {
+                                                                        databaseFailedRows.push(msg);
+                                                                    }
+                                                                    //3
+                                                                    
+
+                                                                  });
+
+                                                                successfulRow.push(Number(activeRow["row"]) + 1);
+                                                            }
+                                                        }
+
+                                                        if (successfulRow === undefined || successfulRow.length == 0) {
+                                                            var req = $.ajax({
+                                                                  method: "POST",
+                                                                  url: "/dev/null",
+                                                                  data: { username: null}
+                                                                })
+                                                        }
+                                                        //2
+                                                        //$.when(req)
+                                                            //NEW PROBLEM
+                                                            // Will check these fine, but when a new row is added to the DB, this seems to 
+                                                            //run again. Means that it will throw a unique id exception cause the row JUST
+                                                            //added to the DB.
+
+                                                            //SOLUTION: $(document).ajaxStop(function () {
+                                                            // 0 === $.active});
+
+                                                            $(document).ajaxStop(function() {
+                                                                
+                                                                successfulRow.sort(function(a, b){return a-b});
+                                                                databaseFailedRows.sort(function(a, b){return a-b});
+
+
+                                                                for (var i = 0; i < databaseFailedRows.length; i++) {
+                                                                    for (var j = 0; j < successfulRow.length; j++) {
+                                                                        if (databaseFailedRows[i] == successfulRow[j]){
+                                                                            successfulRow = successfulRow.slice(0, j).concat(successfulRow.slice(j+1, successfulRow.length));
+                                                                        }
+                                                                    }
+                                                                }
+
+                                                                //Clear the output box of old data...
+                                                                document.getElementById("output").innerHTML = "";
+
+                                                                var loadingIcon = document.getElementById("loading");
+                                                                loadingIcon.style.display = "none";
+
+                                                                outputResults(successfulRow, "success", "");
+        
+                                                                //Output already in database
+                                                                outputResults(databaseFailedRows, "databaseFail", "");
+        
+                                                                //Ouput all missing fields first
+                                                                outputResults(noUsernameErrRows, "missingField", "Username");
+                                                                outputResults(noFnameErrRows, "missingField", "Firstname");
+                                                                outputResults(noSnameErrRows, "missingField", "Surname");
+                                                                outputResults(noEmailErrRows, "missingField", "Email");
+                                                                
+                                                                //Output max characters
+                                                                outputResults(userMaxChars, "maxChars", "Username");
+                                                                outputResults(fnameMaxChars, "maxChars", "Firstname");
+                                                                outputResults(snameMaxChars, "maxChars", "Surname");
+                                                                outputResults(contactMaxChars, "maxChars", "Contact");
+                                                                
+        
+                                                                //Output bad email format
+                                                                outputResults(badEmailFormat, "invalidFormat", "Email");
+        
+                                                                //Ouput not numeric
+                                                                outputResults(contactNotNumeric, "notNumber", "Contact");
+                                                            })
+                                                        
+
+                                                        //end WEN
+
+                                                    }
+                                                    return true;
+                                                } else {
+                                                    document.getElementById("csvError").innerHTML = "The requested file is not a CSV. Please try again.";
+                                                    return false;
+                                                }
+                                            }                                         
+                                        </script>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-warning" data-dismiss="modal">Close</button>

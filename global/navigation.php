@@ -76,6 +76,18 @@
                     ?>
                 </li>
                 <!-- end CONVENOR -->
+                <!-- SUPERVISOR -->
+                <li>
+                    <?php
+                        //Check user permissions. Only show Convenor sidebar options if the user has Convenor permissions.
+                        if (IsSupervisor()){
+                            echo $supervisor;
+                        } else{
+                            echo "";
+                        } 
+                    ?>
+                </li>
+                <!-- end SUPERVISOR -->
             </ul>
         </div>
         <!-- /.sidebar-collapse -->

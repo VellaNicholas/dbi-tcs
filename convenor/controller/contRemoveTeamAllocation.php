@@ -35,11 +35,11 @@
     }
 
     //Function inserts the data, into the database, validates the input and checks there are no errors. 
-    function insert_to_database(&$proName, &$teamID, &$semester, &$year, &$unitID) {
+    function remove_from_database(&$proName, &$teamID, &$semester, &$year, &$unitID) {
         
         try {
             validate_input($proName, $teamID, $semester, $year, $unitID);
-            $result = allocate_project($proName, $teamID, $semester, $year, $unitID);
+            $result = remove_allocation($proName, $teamID, $semester, $year, $unitID);
         } catch (Exception $e) {
             $result = '<div class="span alert alert-danger fade in">' . $e->getMessage() . '</div>';
         }

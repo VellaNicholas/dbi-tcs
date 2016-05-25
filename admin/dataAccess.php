@@ -269,7 +269,6 @@
     function insert_unit_offering(&$unitID, &$unitSemester, &$unitYear, &$unitConvenor) {
         $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
 
-        debug_to_console($unitID . $unitSemester . $unitYear . $unitConvenor);
         $sql = 'BEGIN OFFER_UNIT(:unitid, :teachingperiod, :year, :convenor); END;';
         $stmt = oci_parse($conn,$sql);
 
@@ -301,6 +300,49 @@
                 break;
             default:
                 $result = '<div class="span alert alert-danger fade in">Failed to Add Unit Offering - Unknown Error Occurred</div>';
+                debug_to_console( $e[message] );
+                break;
+        }
+        
+        return $result;
+    }
+
+    function insert_enrolment(&$unitID, &$unitSemester, &$unitYear, &$stuID) {
+        $conn = oci_connect('web_app', 'password', 'dbi-tcs.c0nvd8yryddn.us-west-2.rds.amazonaws.com/DBITCS');
+
+        debug_to_console($unitID . $unitSemester . $unitYear . $stuID);
+
+        $sql = 'BEGIN ENROL_STUDENT(:unitid, :teachingperiod, :year, :stuID); END;';
+        $stmt = oci_parse($conn,$sql);
+
+        //Bind the inputs
+        oci_bind_by_name($stmt, ':unitid', $unitID); //input 
+        oci_bind_by_name($stmt, ':teachingperiod', $unitSemester); //input
+        oci_bind_by_name($stmt, ':year', $unitYear);//input  
+        oci_bind_by_name($stmt, ':stuID', $stuID); //input 
+
+        oci_execute($stmt);
+        oci_commit($conn);
+        
+        $e = oci_error($stmt);
+        switch ($e['code']) {
+            case "":
+                $result='<div class="span alert alert-success fade in"><strong>Success! </strong>Enrolment successfully registered!</div>';
+                break;
+            case 1:
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Enrolment - Student ' . $stuID . ' is already enrolled in ' . $unitID . ' in ' . $unitSemester . ' ' . $unitYear . '</div>';
+                break;
+            case 12899:
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Enrolment - Too many characters in field</div>';
+                break;
+            case 20003:
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Enrolment - ' . $unitID . ' not offered in ' . $unitSemester . ' ' . $unitYear . '</div>';
+                break;
+            case 20002:
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Enrolment - Student ID not found</div>';
+                break;
+            default:
+                $result = '<div class="span alert alert-danger fade in">Failed to Add Enrolment - Unknown Error Occurred</div>';
                 debug_to_console( $e[message] );
                 break;
         }

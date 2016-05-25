@@ -15,6 +15,9 @@
                         		<li>
                             		<a href="../admin/editStudent.php"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Student</a>
                         		</li>
+                                <li>
+                                    <a href="../admin/regEnrolment.php"><i class="fa fa-folder-open fa-fw"></i> Enrol Student</a>
+                                </li>
                     		</ul>
                 		</li>';
     $employees =	'	<li>
@@ -38,7 +41,7 @@
                         			<a href="../admin/editUoS.php"><i class="fa fa-pencil-square-o fa-fw"></i> Edit UoS</a>
                     			</li>
                                 <li>
-                                    <a href="../admin/regUnitOffering.php"><i class="fa fa-plus fa-fw"></i> Offer UoS</a>
+                                    <a href="../admin/regUnitOffering.php"><i class="fa fa-folder-open fa-fw"></i> Offer UoS</a>
                                 </li>
                 			</ul>
             			</li>';
@@ -54,14 +57,22 @@
                         <a class = "transparent"><i class="fa fa-cubes fa-fw"></i><b> Convenor </b></a>  
                     </li>
                     <ul class="nav nav-second-level">';
+    $convStudents = '   <li>
+                            <a href="#"><i class="fa fa-graduation-cap fa-fw"></i> Students<span class="fa arrow"></span></a>
+                            <ul class="nav nav-third-level">
+                                <li>
+                                    <a href="../admin/regEnrolment.php"><i class="fa fa-pencil-square-o fa-fw"></i> Enrol Student</a>
+                                </li>
+                            </ul>
+                        </li>';
     $teams =        '   <li>
                             <a href="#"><i class="fa fa-users fa-fw"></i> Teams<span class="fa arrow"></span></a>
                             <ul class="nav nav-third-level">
                                 <li>
-                                    <a href="regstudent.html"><i class="fa fa-plus fa-fw"></i> Register Team</a>
+                                    <a href="../convenor/regTeam.php"><i class="fa fa-plus fa-fw"></i> Register Team</a>
                                 </li>
                                 <li>
-                                    <a href="editstudent.html"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Team</a>
+                                    <a href="../convenor/editTeam.php"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Team</a>
                                 </li>
                             </ul>
                         </li>';
@@ -69,34 +80,33 @@
                             <a href="#"><i class="fa fa-line-chart fa-fw"></i> Projects<span class="fa arrow"></span></a>
                             <ul class="nav nav-third-level">
                                 <li>
-                                    <!-- OI CHANGE THE REFERENCES -->
-                                    <a href="regemp.html"><i class="fa fa-plus fa-fw"></i>Register Project</a>
+                                    <a href="../convenor/regProject.php"><i class="fa fa-plus fa-fw"></i>Register Project</a>
                                 </li>
                                 <li> 
-                                    <a href="editemp.html"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Project</a>
+                                    <a href="../convenor/editProject.php"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Project</a>
                                 </li>
                             </ul>
                         </li>';
+    // fuck this
     $assessments =  '   <li>
                             <a href="#"><i class="fa fa-file-o fa-fw"></i> Assessments<span class="fa arrow"></span></a>
                             <ul class="nav nav-third-level">
                                 <li>
-                                    <a href="regstudent.html"><i class="fa fa-plus fa-fw"></i> Create Assessment</a>
+                                    <a href="../convenor/regAssessment.php"><i class="fa fa-plus fa-fw"></i> Create Assessment</a>
                                 </li>
                                 <li>
-                                    <a href="editstudent.html"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Assessment</a>
+                                    <a href="../convenor/editAssessment.php"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Assessment</a>
                                 </li>
                             </ul>
                         </li>';
     $allocations =  '   <li>
-                            <a href="#"><i class="fa fa-sitemap fa-fw"></i> Team Allocations<span class="fa arrow"></span></a>
+                            <a href="#"><i class="fa fa-sitemap fa-fw"></i> Project Allocations<span class="fa arrow"></span></a>
                             <ul class="nav nav-third-level">
                                 <li>
-                                    <!-- OI CHANGE THE REFERENCES -->
-                                    <a href="regUoS.html"><i class="fa fa-plus fa-fw"></i> Register Team Allocation</a>
+                                    <a href="../convenor/regTeamAllocation.php"><i class="fa fa-plus fa-fw"></i> Allocate Project to Team</a>
                                 </li>
                                 <li>
-                                    <a href="editUoS.html"><i class="fa fa-pencil-square-o fa-fw"></i> Edit Team Allocations</a>
+                                    <a href="../convenor/removeTeamAllocation.php"><i class="fa fa-trash-o fa-fw"></i> Clear Project Allocation</a>
                                 </li>
                             </ul>
                         </li>';
@@ -107,7 +117,31 @@
 
     //CONVENOR VARIABLE: Includes all associated sub-links. Concat all variables and combine them into $convenor
 
-    $convenor = $conHead . $teams . $projects . $assessments . $allocations . $conReports;
+    $convenor = $conHead . $convStudents . $teams . $projects . $assessments . $allocations . $conReports;
 
+    //SUPERVISOR
+    // Create and populate SUPERVISOR sub-menu variables with associated html.
+    $supHead =      '<li class="disabled">
+                        <a class = "transparent"><i class="fa fa-terminal fa-fw"></i><b> Supervisor </b></a>  
+                    </li>
+                    <ul class="nav nav-second-level">';
+    $supBook =      '<li>
+                            <a href="../supervisor/bookMeeting.php"><i class="fa fa-plus fa-fw"></i> Book Meeting</a>
+                        </li>';
+    $supConduct =      '<li>
+                            <a href="../supervisor/conductMeeting.php"><i class="fa fa-plus fa-fw"></i> Conduct Meeting</a>
+                        </li>';
+
+    $supReviewMeeting = '<li>
+                            <a href="../supervisor/reviewMeeting.php"><i class="fa fa-plus fa-fw"></i> Book Meeting</a>
+                        </li>';
+    $supReviewStudentWork = '<li>
+                            <a href="../supervisor/reviewStudentWork.php"><i class="fa fa-plus fa-fw"></i> Book Meeting</a>
+                            </li>';
+
+
+
+    //ADMIN VARIABLE: Includes all associated sub-links. Concat all variables and combine them into $admin
+    $supervisor = $supHead . $supBook . $supConduct . $supReviewMeeting . $supReviewStudentWork;
 
 ?>

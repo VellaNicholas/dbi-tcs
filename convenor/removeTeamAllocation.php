@@ -3,14 +3,14 @@
     include '../global/ini.php';
     include '../global/navigation.php';
     include 'dataAccess.php';
-    include './controller/contRegTeamAllocation.php';
+    include './controller/contRemoveTeamAllocation.php';
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <title>Allocate Project</title>
+    <title>Clear Project Allocation</title>
 </head>
 
 <body>
@@ -20,7 +20,7 @@
 
         //Checks if submit botton is pressed
         if (isset($_POST["submit"])) {
-            $result = insert_to_database($proName, $teamID, $semester, $year, $unitID);
+            $result = remove_from_database($proName, $teamID, $semester, $year, $unitID);
         }           
         
     ?>
@@ -36,7 +36,7 @@
         <div id="page-wrapper">
             <div class="row">
                 <div class="col-lg-12">
-                    <h1 class="page-header">Allocate Project</h1>
+                    <h1 class="page-header">Clear Project Allocation</h1>
                 </div>
                 <!-- /.col-lg-12 -->
             </div>

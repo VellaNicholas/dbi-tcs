@@ -57,11 +57,8 @@
             <div class="row">
                 <div class="col-lg-6">
                     <strong> Welcome, <?php echo $_SESSION["username"]; ?></strong><br><br>
-                    <p>
-                        <?php
-                            print_r($_SESSION);
-                        ?>
-                    </p><br><br>
+                    <br>
+                    <br>
                 </div>
             </div>
             <div class="row">
